@@ -20,5 +20,24 @@
     "php-cs-fixer.rules": "@PSR12,ordered_imports,no_unused_imports,array_syntax",
 
     // 🎨 Blade templates
-    "[blade]": { "editor.defaultFormatter": "shufo.vscode-blade-formatter" }
+    "[blade]": {
+        "editor.defaultFormatter": "shufo.vscode-blade-formatter"
+    },
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "mysql",
+            "username": "sail",
+            "database": "laravel",
+            "askForPassword": true
+        }
+    ]
 }
