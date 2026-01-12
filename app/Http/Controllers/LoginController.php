@@ -34,9 +34,9 @@ class LoginController extends Controller
         $role = Auth::user()->role;
 
         return match ($role) {
-            'admin' => redirect()->route('admin.admin-dashboard'),
-            'business_user' => redirect()->route('business.business-dashboard'),
-            default => redirect()->route('client.client-dashboard'),
+            'admin' => redirect()->route('admin.dashboard'),
+            'business_user' => redirect()->route('business.dashboard'),
+            default => redirect()->route('client.dashboard'),
         };
     }
 

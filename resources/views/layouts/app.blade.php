@@ -39,7 +39,7 @@
 
         <!-- Page Content -->
         <main class="flex flex-col-reverse lg:flex-row lg:justify-center">
-            <div class="max-w-[600px] w-full lg:max-w-full lg:w-[600px]">
+            <div class="max-w-[1200px] w-full lg:max-w-full lg:w-[1200px]">
                 {{ $slot }}
             </div>
         </main>
