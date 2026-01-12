@@ -46,4 +46,23 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function profile()
+    {
+        return $this->hasOne(ClientProfile::class);
+    }
+
+    public function businessProfile()
+    {
+        return $this->hasOne(BusinessProfile::class);
+    }
+
+    public function display_name(): string
+    {
+        return match($this->role) {
+            'standard_user' => trim(($this->profile->first_name ?? '').' '.($this->profile->last_name ?? '')),
+            'business_user' => $this->businessProfile->business_name ?? '',
+            default => 'Admin',
+        };
+    }
 }

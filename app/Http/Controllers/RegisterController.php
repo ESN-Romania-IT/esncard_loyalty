@@ -21,13 +21,16 @@ class RegisterController extends Controller
                 ->withInput();
         }
 
-        User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
+        $user = User::create([
             'email' => $request->email,
             'esncard_code' => $request->esncard_code,
             'role' => 'standard_user',
-            'password'=> Hash::make($request->password)
+            'password'=> Hash::make($request->password),
+        ]);
+
+        $user->profile()->create([
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
         ]);
     }
 

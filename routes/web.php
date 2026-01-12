@@ -2,6 +2,9 @@
 use App\Http\Controllers\Client\ClientDashboardController;
 use App\Http\Controllers\Business\BusinessDashboardController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\BusinessController;
+use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\InfoController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
@@ -34,17 +37,34 @@ Route::middleware('auth')->group(function () {
         };
     })->name('me');
 
-    Route::middleware('role:standard_user')->prefix('me')->group(function () {
-        Route::get('/dashboard', [ClientDashboardController::class, 'index']) ->middleware(['auth', 'role:standard_user'])->name('client.client-dashboard');
-        // Route::get('/stats', [DashboardController::class, 'stats'])->name('client.dashboard.stats');
-        // Route::get('/settings', [DashboardController::class, 'settings'])->name('client.dashboard.settings');
-    });
+    // CLIENT (standard_user)
+    Route::middleware('role:standard_user')
+        ->prefix('me')
+        ->name('client.')
+        ->group(function () {
+            Route::get('/dashboard', [ClientDashboardController::class, 'index'])
+                ->name('dashboard');
+        });
 
-    Route::middleware('role:business_user')->prefix('business')->group(function () {
-        Route::get('/dashboard', [BusinessDashboardController::class, 'index']) ->middleware(['auth', 'role:business_user'])->name('business.business-dashboard');
-    });
+    // BUSINESS (business_user)
+    Route::middleware('role:business_user')
+        ->prefix('business')
+        ->name('business.')
+        ->group(function () {
+            Route::get('/dashboard', [BusinessDashboardController::class, 'index'])
+                ->name('dashboard');
+        });
 
-    Route::middleware('role:admin')->prefix('admin')->group(function () {
-        Route::get('/dashboard', [AdminDashboardController::class, 'index']) ->middleware(['auth', 'role:admin'])->name('admin.admin-dashboard');
-    });
+    // ADMIN (admin)
+    Route::middleware('role:admin')
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+                ->name('dashboard');
+
+            Route::resource('users', UserController::class);
+            Route::resource('clients', ClientController::class);
+            Route::resource('businesses', BusinessController::class);
+        });
 });
