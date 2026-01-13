@@ -4,7 +4,7 @@
         <p class="mb-4">You are logged in as a <b>STANDARD USER</b>.</p>
 
         <div class="text-sm bg-gray-100 p-3 rounded">
-            <div><b>Name:</b> {{ $user->first_name }} {{ $user->last_name }}</div>
+            <div><b>Name:</b> {{ $user->profile->first_name }} {{ $user->profile->last_name }}</div>
             <div><b>Email:</b> {{ $user->email }}</div>
             <div><b>Role:</b> {{ $user->role }}</div>
         </div>

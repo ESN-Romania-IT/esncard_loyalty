@@ -4,62 +4,39 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\BusinessProfile;
 
 class BusinessController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.businesses.index');
-    }
+         $q = $request->query('q');
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+       $businesses = BusinessProfile::query()
+        ->with('user')
+        ->when($q, function ($query) use ($q) {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('business_name', 'like', "%{$q}%")
+                    ->orWhereHas('user', function ($user) use ($q) {
+                        $user->where('email', 'like', "%{$q}%");
+                    });
+            });
+        })
+        ->orderByDesc('id')
+        ->paginate(10)
+        ->withQueryString();
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        return view('admin.businesses.index', [
+            'businesses' => $businesses,
+            'q' => $q,
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(BusinessProfile $business)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('admin.businesses.offers.index', $business);
     }
 }

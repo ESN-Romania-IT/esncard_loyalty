@@ -3,11 +3,14 @@ use App\Http\Controllers\Client\ClientDashboardController;
 use App\Http\Controllers\Business\BusinessDashboardController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\BusinessController;
+use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\ClientController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\InfoController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ClientRedemptionController;
+use App\Http\Controllers\Admin\OfferRedemptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'))->name('welcome');
@@ -64,7 +67,14 @@ Route::middleware('auth')->group(function () {
                 ->name('dashboard');
 
             Route::resource('users', UserController::class);
-            Route::resource('clients', ClientController::class);
-            Route::resource('businesses', BusinessController::class);
+
+            Route::resource('clients', ClientController::class)->only(['index','show']);
+            Route::resource('clients.redemptions', ClientRedemptionController::class)->only(['store', 'destroy']);
+            Route::delete('clients/{client}/redemptions', [ClientRedemptionController::class, 'destroyForOffer'])->name('clients.redemptions.destroyForOffer');
+
+            Route::resource('businesses', BusinessController::class)->only(['index','show']);
+            Route::resource('businesses.offers', OfferController::class);
+            Route::resource('businesses.offers.redemptions', OfferRedemptionController::class)->only(['store', 'destroy']);
+            Route::delete('businesses/{business}/offers/{offer}/redemptions', [OfferRedemptionController::class, 'destroyForClient'])->name('businesses.offers.redemptions.destroyForClient');
         });
 });

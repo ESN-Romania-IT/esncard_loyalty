@@ -10,6 +10,7 @@ class ClientDashboardController extends Controller
 
     public function index(Request $request)
     {
+        logger($request->user()->profile);
         return view('client.client-dashboard', [
             'user' => $request->user(),
         ]);

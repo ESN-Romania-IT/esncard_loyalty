@@ -13,7 +13,7 @@ class Offer extends Model
         'is_active'
     ];
 
-    public function businessProfiles(){
+    public function business_rofiles(){
         return $this->belongsTo(BusinessProfile::class, 'business_profile_id');
     }
 
