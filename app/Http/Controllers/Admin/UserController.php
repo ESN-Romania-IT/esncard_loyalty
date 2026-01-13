@@ -27,7 +27,7 @@ class UserController extends Controller
                             $profile->where('first_name', 'like', "%{$q}%")
                                     ->orWhere('last_name', 'like', "%{$q}%");
                         })
-                        ->orWhereHas('businessProfile', function ($business) use ($q) {
+                        ->orWhereHas('business_profile', function ($business) use ($q) {
                             $business->where('business_name', 'like', "%{$q}%");
                         });
                 });
@@ -84,7 +84,7 @@ class UserController extends Controller
         }
 
         if ($user->role === 'business_user') {
-            $user->businessProfile()->create([
+            $user->business_profile()->create([
                 'business_name' => $data['business_name'],
             ]);
         }
@@ -133,7 +133,7 @@ class UserController extends Controller
             $user->profile()->delete();
         }
         if ($user->role !== 'business_user') {
-            $user->businessProfile()->delete();
+            $user->business_profile()->delete();
         }
 
         if ($user->role === 'standard_user') {
@@ -144,7 +144,7 @@ class UserController extends Controller
         }
 
         if ($user->role === 'business_user') {
-            $user->businessProfile()->updateOrCreate(
+            $user->business_profile()->updateOrCreate(
                 ['user_id' => $user->id],
                 ['business_name' => $data['business_name']]
             );

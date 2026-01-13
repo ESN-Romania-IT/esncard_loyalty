@@ -52,7 +52,7 @@ class User extends Authenticatable
         return $this->hasOne(ClientProfile::class);
     }
 
-    public function businessProfile()
+    public function business_profile()
     {
         return $this->hasOne(BusinessProfile::class);
     }
@@ -61,7 +61,7 @@ class User extends Authenticatable
     {
         return match($this->role) {
             'standard_user' => trim(($this->profile->first_name ?? '').' '.($this->profile->last_name ?? '')),
-            'business_user' => $this->businessProfile->business_name ?? '',
+            'business_user' => $this->business_rofile->business_name ?? '',
             default => 'Admin',
         };
     }

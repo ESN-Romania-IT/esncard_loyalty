@@ -21,7 +21,7 @@ class OfferRedemption extends Model
         return $this->belongsTo(ClientProfile::class, 'client_profile_id');
     }
 
-    public function businessProfile(){
+    public function business_profile(){
         return $this->belongsTo(BusinessProfile::class, 'business_profile_id');
     }
 }

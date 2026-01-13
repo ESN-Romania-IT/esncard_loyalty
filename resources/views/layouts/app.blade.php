@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
+    <style>[x-cloak]{display:none !important;}</style>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -14,9 +15,13 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Body styiling because there is an offset of 20px that i don't know where it's coming from -->
+    <style>
+     body { translate: 0px -20px }
+    </style>
 </head>
 
-<body class="font-sans antialiased">
+<body class="font-sans antialiased m-0">
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
         <!-- Page Heading -->
         @isset($header)
@@ -28,14 +33,22 @@
         @endisset
 
         @auth
-            <form method="POST" action="{{ route('logout') }}" class="text-right mr-10 mt-5">
-                @csrf
-                <button type="submit"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Logout
-                </button>
-            </form>
+            <div class="flex justify-end items-center gap-3 mr-10 mt-5">
+                <a href="{{ route('me') }}"
+                class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Dashboard
+                </a>
+
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Logout
+                    </button>
+                </form>
+            </div>
         @endauth
+
 
         <!-- Page Content -->
         <main class="flex flex-col-reverse lg:flex-row lg:justify-center">

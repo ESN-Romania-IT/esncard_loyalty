@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
 {
@@ -32,6 +33,11 @@ class RegisterController extends Controller
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
         ]);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('me');
     }
 
     private function mockValidateEsnCard($code)
