@@ -15,6 +15,10 @@ Route::middleware('guest:student')->group(function () {
     Route::get('/register/{id}', [StudentAuthController::class, 'register'])->name('register');
 
     Route::post('/register/{id}', [StudentAuthController::class, 'register_submit'])->name('register.submit');
+
+
+    Route::get('/login', [StudentAuthController::class, 'loginForm'])->name('login.form');
+    Route::post('/login', [StudentAuthController::class, 'login'])->name('login.submit');
 });
 
 
