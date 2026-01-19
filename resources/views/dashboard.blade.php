@@ -1,13 +1,13 @@
 <x-app-layout>
-    <div class="max-w-md mx-auto mt-10 bg-white shadow-md p-6 rounded">
-        <h2 class="text-xl font-bold mb-2">Client Dashboard</h2>
-        <p class="mb-4">You are logged in as a <b>STANDARD USER</b>.</p>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Dashboard!') }}
+        </h2>
+    </x-slot>
 
-        <div class="text-sm bg-gray-100 p-3 rounded">
-            <div><b>Name:</b> {{ $user->profile->first_name }} {{ $user->profile->last_name }}</div>
-            <div><b>Email:</b> {{ $user->email }}</div>
-            <div><b>Role:</b> {{ $user->role }}</div>
-        </div>
+    @auth('student')
+        <p class="text-lg text-white">Hello, {{ auth('student')->user()->forename }} {{ auth('student')->user()->surname }}
+        </p>
 
         <!-- QR SECTION -->
 
@@ -29,8 +29,7 @@
             </div>
 
             <!-- FULLSCREEN OVERLAY -->
-            <div id="qrOverlay"
-                class="fixed inset-0 bg-black/60 flex items-center justify-center hidden cursor-pointer">
+            <div id="qrOverlay" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden cursor-pointer">
                 <div class="bg-white p-4 rounded-lg shadow-xl">
                     {!! QrCode::size(400)->generate($qrData) !!}
                 </div>
@@ -55,5 +54,6 @@
                 });
             </script>
         @endif
-    </div>
+    @endauth
+
 </x-app-layout>

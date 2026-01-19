@@ -1,28 +1,22 @@
 <?php
 
-namespace App\Http\Controllers\Client;
-
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Hash;
 
-class ClientDashboardController extends Controller
+class DashboardController extends Controller
 {
-
-    public function index(Request $request)
+    public function index()
     {
-        logger($request->user()->profile);
-        return view('client.client-dashboard', [
-            'user' => $request->user(),
-        ]);
+        $student = auth()->guard('student')->user();
 
         $response = Http::timeout(1000)
-        ->withHeaders([
-            'x-bypass-cf-api' => config('services.esn.bypass_key'),
-        ])
-        ->get('https://esncard.org/services/1.0/card.json', [
-            'code' => $student->esncard_serial,
-        ]);
+            ->withHeaders([
+                'x-bypass-cf-api' => config('services.esn.bypass_key'),
+            ])
+            ->get('https://esncard.org/services/1.0/card.json', [
+                'code' => $student->esncard_serial,
+            ]);
 
         if (! $response->successful()) {
             return view('dashboard', [
@@ -61,5 +55,16 @@ class ClientDashboardController extends Controller
         ]);
 
         return view('dashboard', compact('qrData'));
+    }
+
+
+    public function stats()
+    {
+        return view('stats');
+    }
+
+    public function settings()
+    {
+        return view('settings');
     }
 }
