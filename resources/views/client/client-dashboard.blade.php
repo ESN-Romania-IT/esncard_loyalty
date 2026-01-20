@@ -35,25 +35,24 @@
                     {!! QrCode::size(400)->generate($qrData) !!}
                 </div>
             </div>
-
-            <script>
-                const qrWrapper = document.getElementById('qrWrapper');
-                const toggleQR = document.getElementById('toggleQR');
-                const qrSmall = document.getElementById('qrSmall');
-                const qrOverlay = document.getElementById('qrOverlay');
-
-                toggleQR.addEventListener('click', () => {
-                    qrWrapper.classList.toggle('hidden');
-                });
-
-                qrSmall.addEventListener('click', () => {
-                    qrOverlay.classList.remove('hidden');
-                });
-
-                qrOverlay.addEventListener('click', () => {
-                    qrOverlay.classList.add('hidden');
-                });
-            </script>
         @endif
     </div>
+    <script>
+        const qrWrapper = document.getElementById('qrWrapper');
+        const toggleQR = document.getElementById('toggleQR');
+        const qrSmall = document.getElementById('qrSmall');
+        const qrOverlay = document.getElementById('qrOverlay');
+
+        toggleQR.addEventListener('click', () => {
+            qrWrapper.classList.toggle('hidden');
+        });
+
+        qrSmall.addEventListener('click', () => {
+            qrOverlay.classList.remove('hidden');
+        });
+
+        qrOverlay.addEventListener('click', () => {
+            qrOverlay.classList.add('hidden');
+        });
+    </script>
 </x-app-layout>

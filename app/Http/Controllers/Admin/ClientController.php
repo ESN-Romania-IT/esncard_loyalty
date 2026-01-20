@@ -85,12 +85,32 @@ class ClientController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        $payload = [
+            'first_name' => $client->first_name,
+            'last_name'  =>  $client->last_name,
+            'exp'        => now()->addMinutes(10)->timestamp,
+        ];
+
+        $payloadJson = json_encode($payload);
+
+        $signature = hash_hmac(
+            'sha256',
+            $payloadJson,
+            config('services.qr.hmac_secret')
+        );
+
+        $qrData = json_encode([
+            'payload'   => $payload,
+            'signature' => $signature,
+        ]);
+
         return view('admin.clients.show', [
             'q' => $q,
             'client' => $client,
             'rows' => $rows,
             'businesses' => $businesses,
-            'usedByOffer' => $usedByOffer
+            'usedByOffer' => $usedByOffer,
+            'qrData' => $qrData
         ]);
     }
 }
