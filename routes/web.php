@@ -78,3 +78,6 @@ Route::middleware('auth')->group(function () {
             Route::delete('businesses/{business}/offers/{offer}/redemptions', [OfferRedemptionController::class, 'destroyForClient'])->name('businesses.offers.redemptions.destroyForClient');
         });
 });
+Route::get('/qr-reader', function () {
+    return view('QrReader');
+})->name('qr.reader');
