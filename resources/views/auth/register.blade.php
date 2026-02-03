@@ -34,15 +34,11 @@
 
             <label class="block mb-2">Password</label>
             <div class="relative mb-2">
-                <input type="password"
-                    name="password"
-                    id="password"
-                    autocomplete="new-password"
+                <input type="password" name="password" id="password" autocomplete="new-password"
                     class="w-full border p-2 rounded pr-12">
 
-                <button type="button"
-                        onclick="togglePassword('password', this)"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900">
+                <button type="button" onclick="togglePassword('password', this)"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900">
                     Show
                 </button>
             </div>
@@ -54,15 +50,11 @@
 
             <label class="block mb-2">Confirm Password</label>
             <div class="relative mb-4">
-                <input type="password"
-                    name="password_confirmation"
-                    id="password_confirmation"
-                    autocomplete="new-password"
-                    class="w-full border p-2 rounded pr-12">
+                <input type="password" name="password_confirmation" id="password_confirmation"
+                    autocomplete="new-password" class="w-full border p-2 rounded pr-12">
 
-                <button type="button"
-                        onclick="togglePassword('password_confirmation', this)"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900">
+                <button type="button" onclick="togglePassword('password_confirmation', this)"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900">
                     Show
                 </button>
             </div>
@@ -88,19 +80,25 @@
                 Register
             </button>
         </form>
+        <div class="mt-4 text-center text-sm">
+            <span>Already have an account?</span>
+            <a href="{{ route('login') }}" class="text-blue-600 hover:underline">
+                Login
+            </a>
+        </div>
     </div>
-<script>
-function togglePassword(inputId, btn) {
-    const input = document.getElementById(inputId);
+    <script>
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
 
-    if (input.type === 'password') {
-        input.type = 'text';
-        btn.textContent = 'Hide';
-    } else {
-        input.type = 'password';
-        btn.textContent = 'Show';
-    }
-}
-</script>
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = 'Hide';
+            } else {
+                input.type = 'password';
+                btn.textContent = 'Show';
+            }
+        }
+    </script>
 
 </x-app-layout>
