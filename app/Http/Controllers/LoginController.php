@@ -33,11 +33,13 @@ class LoginController extends Controller
 
         $role = Auth::user()->role;
 
-        return match ($role) {
-            'admin' => redirect()->route('admin.dashboard'),
-            'business_user' => redirect()->route('business.dashboard'),
-            default => redirect()->route('client.dashboard'),
+        $defaultRedirect = match ($role) {
+            'admin' => route('admin.dashboard'),
+            'business_user' => route('business.dashboard'),
+            default => route('client.dashboard'),
         };
+
+        return redirect()->intended($defaultRedirect);
     }
 
     public function logout(Request $request)

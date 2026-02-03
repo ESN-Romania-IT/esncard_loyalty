@@ -3,10 +3,15 @@
 
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold">Users</h2>
-            <a href="{{ route('admin.users.create') }}"
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                + New User
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('admin.dashboard') }}" class="text-blue-600 hover:underline text-sm">
+                    ← Back to Dashboard
+                </a>
+                <a href="{{ route('admin.users.create') }}"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    + New User
+                </a>
+            </div>
         </div>
 
         @if (session('status'))

@@ -11,6 +11,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ClientRedemptionController;
 use App\Http\Controllers\Admin\OfferRedemptionController;
+use App\Http\Controllers\Business\BusinessOfferController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'))->name('welcome');
@@ -56,6 +57,36 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/dashboard', [BusinessDashboardController::class, 'index'])
                 ->name('dashboard');
+
+            Route::get('/offers', [BusinessOfferController::class, 'index'])
+                ->name('offers.index');
+
+            Route::get('/offers/create', [BusinessOfferController::class, 'create'])
+                ->name('offers.create');
+
+            Route::post('/offers', [BusinessOfferController::class, 'store'])
+                ->name('offers.store');
+
+            Route::get('/offers/{offer}', [BusinessOfferController::class, 'show'])
+                ->name('offers.show');
+
+            Route::get('/offers/{offer}/edit', [BusinessOfferController::class, 'edit'])
+                ->name('offers.edit');
+
+            Route::put('/offers/{offer}', [BusinessOfferController::class, 'update'])
+                ->name('offers.update');
+
+            Route::post('/qr/verify', [BusinessDashboardController::class, 'verifyQr'])
+                ->name('qr.verify');
+
+            Route::get('/qr/open', [BusinessDashboardController::class, 'openQr'])
+                ->name('qr.open');
+
+            Route::get('/qr/offers', [BusinessDashboardController::class, 'offers'])
+                ->name('qr.offers');
+
+            Route::post('/qr/redeem', [BusinessDashboardController::class, 'redeem'])
+                ->name('qr.redeem');
         });
 
     // ADMIN (admin)

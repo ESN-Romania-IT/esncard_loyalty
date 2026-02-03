@@ -61,7 +61,7 @@ class User extends Authenticatable
     {
         return match($this->role) {
             'standard_user' => trim(($this->profile->first_name ?? '').' '.($this->profile->last_name ?? '')),
-            'business_user' => $this->business_rofile->business_name ?? '',
+            'business_user' => $this->business_profile->business_name ?? '',
             default => 'Admin',
         };
     }

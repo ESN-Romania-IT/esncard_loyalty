@@ -9,11 +9,11 @@
 
             <div id="standard-fields">
                 <label class="block mb-2">First Name</label>
-                <input type="text" name="first_name" value="{{ old('first_name') }}"
+                <input type="text" name="first_name" value="{{ old('first_name', $user->profile->first_name ?? '') }}"
                     class="w-full border p-2 rounded mb-4">
 
                 <label class="block mb-2">Last Name</label>
-                <input type="text" name="last_name" value="{{ old('last_name') }}"
+                <input type="text" name="last_name" value="{{ old('last_name', $user->profile->last_name) }}"
                     class="w-full border p-2 rounded mb-4">
             </div>
 

@@ -36,6 +36,35 @@
                 </div>
             </div>
         @endif
+
+        <div class="mt-6 bg-white shadow-md p-6 rounded">
+            <h3 class="text-lg font-semibold mb-4">Your redemptions</h3>
+
+            @if ($redemptionsByBusiness->isEmpty())
+                <div class="text-sm text-gray-500">No redemptions yet.</div>
+            @else
+                <div class="space-y-4">
+                    @foreach ($redemptionsByBusiness as $businessName => $offers)
+                        <div class="border border-gray-200 rounded p-4">
+                            <div class="font-semibold text-gray-800 mb-3">
+                                {{ $businessName }}
+                            </div>
+
+                            <div class="space-y-2">
+                                @foreach ($offers as $offer)
+                                    <div class="flex items-center justify-between text-sm">
+                                        <div>{{ $offer->offer_title }}</div>
+                                        <div class="text-gray-600">
+                                            {{ $offer->redeemed_count }} / {{ $offer->uses_per_client }}
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </div>
     <script>
         const qrWrapper = document.getElementById('qrWrapper');

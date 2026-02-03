@@ -86,12 +86,13 @@ class ClientController extends Controller
             ->withQueryString();
 
         $payload = [
+            'client_profile_id' => $client->id,
             'first_name' => $client->first_name,
             'last_name'  =>  $client->last_name,
             'exp'        => now()->addMinutes(10)->timestamp,
         ];
 
-        $payloadJson = json_encode($payload);
+        $payloadJson = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         $signature = hash_hmac(
             'sha256',
@@ -99,8 +100,10 @@ class ClientController extends Controller
             config('services.qr.hmac_secret')
         );
 
-        $qrData = json_encode([
-            'payload'   => $payload,
+        $payloadEncoded = rtrim(strtr(base64_encode($payloadJson), '+/', '-_'), '=');
+
+        $qrData = route('business.qr.open', [
+            'payload' => $payloadEncoded,
             'signature' => $signature,
         ]);
 
