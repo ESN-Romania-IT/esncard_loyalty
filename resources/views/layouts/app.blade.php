@@ -7,7 +7,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
-    <style>[x-cloak]{display:none !important;}</style>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -17,12 +21,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Body styiling because there is an offset of 20px that i don't know where it's coming from -->
     <style>
-     body { translate: 0px -20px }
+        body {
+            translate: 0px -20px;
+        }
     </style>
 </head>
 
 <body class="font-sans antialiased m-0">
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="min-h-screen bg-black-100 dark:bg-black-900">
         <!-- Page Heading -->
         @isset($header)
             <header class="bg-white dark:bg-gray-800 shadow">
@@ -35,7 +41,7 @@
         @auth
             <div class="flex justify-end items-center gap-3 mr-10 mt-5">
                 <a href="{{ route('me') }}"
-                class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Dashboard
                 </a>
 
