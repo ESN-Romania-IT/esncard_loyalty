@@ -27,6 +27,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 });
 
+Route::view('/terms-and-conditions', 'terms-and-conditions')->name('terms-and-conditions');
+
+Route::view('/about', 'about')->name('about');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
