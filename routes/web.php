@@ -11,6 +11,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ClientRedemptionController;
 use App\Http\Controllers\Admin\OfferRedemptionController;
+use App\Http\Controllers\Business\BusinessOfferController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'))->name('welcome');
@@ -26,6 +27,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 });
 
+Route::view('/terms-and-conditions', 'terms-and-conditions')->name('terms-and-conditions');
+
+Route::view('/about', 'about')->name('about');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -56,6 +60,36 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/dashboard', [BusinessDashboardController::class, 'index'])
                 ->name('dashboard');
+
+            Route::get('/offers', [BusinessOfferController::class, 'index'])
+                ->name('offers.index');
+
+            Route::get('/offers/create', [BusinessOfferController::class, 'create'])
+                ->name('offers.create');
+
+            Route::post('/offers', [BusinessOfferController::class, 'store'])
+                ->name('offers.store');
+
+            Route::get('/offers/{offer}', [BusinessOfferController::class, 'show'])
+                ->name('offers.show');
+
+            Route::get('/offers/{offer}/edit', [BusinessOfferController::class, 'edit'])
+                ->name('offers.edit');
+
+            Route::put('/offers/{offer}', [BusinessOfferController::class, 'update'])
+                ->name('offers.update');
+
+            Route::post('/qr/verify', [BusinessDashboardController::class, 'verifyQr'])
+                ->name('qr.verify');
+
+            Route::get('/qr/open', [BusinessDashboardController::class, 'openQr'])
+                ->name('qr.open');
+
+            Route::get('/qr/offers', [BusinessDashboardController::class, 'offers'])
+                ->name('qr.offers');
+
+            Route::post('/qr/redeem', [BusinessDashboardController::class, 'redeem'])
+                ->name('qr.redeem');
         });
 
     // ADMIN (admin)
@@ -78,3 +112,6 @@ Route::middleware('auth')->group(function () {
             Route::delete('businesses/{business}/offers/{offer}/redemptions', [OfferRedemptionController::class, 'destroyForClient'])->name('businesses.offers.redemptions.destroyForClient');
         });
 });
+Route::get('/qr-reader', function () {
+    return view('QrReader');
+})->name('qr.reader');

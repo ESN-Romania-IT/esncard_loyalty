@@ -47,8 +47,10 @@
 
                 <button type="button" onclick="togglePassword('password', this)"
                     class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900">
-                    Show
-                </button>
+                    <button type="button" onclick="togglePassword('password', this)"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900">
+                        Show
+                    </button>
             </div>
 
             @error('password')
@@ -63,8 +65,10 @@
 
                 <button type="button" onclick="togglePassword('password_confirmation', this)"
                     class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900">
-                    Show
-                </button>
+                    <button type="button" onclick="togglePassword('password_confirmation', this)"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900">
+                        Show
+                    </button>
             </div>
 
             @error('password_confirmation')
@@ -88,19 +92,28 @@
                 Register
             </button>
         </form>
+        <div class="mt-4 text-center text-sm">
+            <span>Already have an account?</span>
+            <a href="{{ route('login') }}" class="text-blue-600 hover:underline">
+                Login
+            </a>
+        </div>
     </div>
     <script>
         function togglePassword(inputId, btn) {
-            const input = document.getElementById(inputId);
+            const input = document.getElementById(inputId); <
+            script >
+                function togglePassword(inputId, btn) {
+                    const input = document.getElementById(inputId);
 
-            if (input.type === 'password') {
-                input.type = 'text';
-                btn.textContent = 'Hide';
-            } else {
-                input.type = 'password';
-                btn.textContent = 'Show';
-            }
-        }
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        btn.textContent = 'Hide';
+                    } else {
+                        input.type = 'password';
+                        btn.textContent = 'Show';
+                    }
+                }
     </script>
     <footer
         class="max-w-4xl mx-auto flex items-center justify-center mt-10 gap-4 border-t border-gray-100 py-4 text-center">

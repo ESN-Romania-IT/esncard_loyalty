@@ -12,6 +12,11 @@
             display: none !important;
         }
     </style>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -31,8 +36,8 @@
     <div class="min-h-screen bg-black-100 dark:bg-black-900">
         <!-- Page Heading -->
         @isset($header)
-            <header class="bg-white dark:bg-gray-800 shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <header class="bg-[#EBEBEB] shadow mt-4">
+                <div class="max-w-7xl mx-auto px-6 py-6 flex justify-center">
                     {{ $header }}
                 </div>
             </header>
@@ -41,6 +46,7 @@
         @auth
             <div class="flex justify-end items-center gap-3 mr-10 mt-5">
                 <a href="{{ route('me') }}"
+                    class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Dashboard
                 </a>
@@ -56,12 +62,22 @@
         @endauth
 
 
-        <!-- Page Content -->
-        <main class="flex flex-col-reverse lg:flex-row lg:justify-center">
-            <div class="max-w-[1200px] w-full lg:max-w-full lg:w-[1200px]">
+        {{-- MAIN CONTENT --}}
+        <main class="flex-1 flex justify-center bg-white">
+            <div class="w-full ">
                 {{ $slot }}
             </div>
         </main>
+
+        {{-- FOOTER --}}
+        @isset($footer)
+            <footer class="bg-[#EBEBEB] shadow">
+                <div class="mx-auto flex justify-center">
+                    {{ $footer }}
+                </div>
+            </footer>
+        @endisset
+
     </div>
 </body>
 

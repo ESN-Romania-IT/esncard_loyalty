@@ -14,14 +14,6 @@ class RegisterController extends Controller
     }
 
     public function register(RegisterRequest $request){
-        //add validation logic for esn card code
-
-        if (!$this->mockValidateEsnCard($request->esncard_code)) {
-            return back()
-                ->withErrors(['esncard_code' => 'Invalid ESNcard code.'])
-                ->withInput();
-        }
-
         $user = User::create([
             'email' => $request->email,
             'esncard_code' => $request->esncard_code,
@@ -38,11 +30,5 @@ class RegisterController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('me');
-    }
-
-    private function mockValidateEsnCard($code)
-    {
-        // Mock rule: only accept codes starting with "ESN"
-        return str_starts_with($code, 'ESN');
     }
 }

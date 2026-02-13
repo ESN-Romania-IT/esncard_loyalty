@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'esn' => [
+        'bypass_key' => env('ESN_API_BYPASS_KEY'),
+    ],
+
+    'qr' => [
+        'hmac_secret' => env('QR_SECRET_HMAC'),
+    ],
+
 ];
