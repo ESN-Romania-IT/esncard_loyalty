@@ -182,10 +182,6 @@
         </section>
     </div>
 
-    <x-slot name="footer">
-        <p class="text-sm text-gray-600">
-            © {{ date('Y') }} ESN Romania · All rights reserved
-        </p>
-    </x-slot>
+    <x-site-footer />
 
 </x-app-layout>

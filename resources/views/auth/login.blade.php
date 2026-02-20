@@ -52,20 +52,5 @@
     </div>
     {{-- End of Login Form --}}
     {{-- Footer --}}
-    <footer
-        class="max-w-4xl mx-auto flex items-center justify-center mt-10  gap-4 border-t border-gray-100 py-4 text-center">
-        <a href="{{ route('about') }}" class="text-sm text-white hover:underline pr-20 ">
-            About us
-        </a>
-        <a href="{{ route('terms-and-conditions') }}" class="text-sm text-white hover:underline pl-20 ">
-            Terms & Conditions
-        </a>
-    </footer>
-    <div class="fixed bottom-0 left-0 right-0 flex justify-center">
-        <div class="flex h-4 w-full max-w-6xl">
-            <div class="flex-1 bg-[#2e3192]"></div>
-            <div class="flex-1 bg-[#ec008c]"></div>
-            <div class="flex-1 bg-[#7ac143]"></div>
-        </div>
-    </div>
+    <x-site-footer />
 </x-app-layout>

@@ -99,8 +99,6 @@
         </div>
     </section>
 
-    <footer class="bg-gray-100 py-6 text-center text-sm text-gray-500">
-        © 2025 ESN Romania. All rights reserved.
-    </footer>
+    <x-site-footer />
 
 </x-app-layout>

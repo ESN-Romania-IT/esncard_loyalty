@@ -24,16 +24,20 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <!-- Body styiling because there is an offset of 20px that i don't know where it's coming from -->
     <style>
-        body {
-            translate: 0px -20px;
+        main>.w-full>footer {
+            margin-top: auto;
+        }
+
+        main>.w-full>*:not(footer) {
+            flex-shrink: 0;
+            width: 100%;
         }
     </style>
 </head>
 
 <body class="font-sans antialiased m-0">
-    <div class="min-h-screen bg-black-100 dark:bg-black-900">
+    <div class="min-h-screen flex flex-col bg-black-100 dark:bg-black-900">
         <!-- Page Heading -->
         @isset($header)
             <header class="bg-[#EBEBEB] shadow mt-4">
@@ -44,27 +48,32 @@
         @endisset
 
         @auth
-            <div class="flex justify-end items-center gap-3 mr-10 mt-5">
-                <a href="{{ route('me') }}"
-                    class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Dashboard
-                </a>
+            @php
+                $showAuthActions = request()->routeIs('business.*', 'client.*', 'admin.*');
+            @endphp
 
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Logout
-                    </button>
-                </form>
-            </div>
+            @if ($showAuthActions)
+                <div class="flex justify-end items-center gap-3 mr-10 mt-5">
+                    <a href="{{ route('me') }}"
+                        class="bg-[#2e3192] hover:bg-[#25287a] text-white font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline">
+                        Dashboard
+                    </a>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="bg-[#ec008c] hover:bg-[#be0070] text-white font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            @endif
         @endauth
 
 
         {{-- MAIN CONTENT --}}
-        <main class="flex-1 flex justify-center bg-white">
-            <div class="w-full ">
+        <main class="flex-1 flex justify-center bg-white px-2 sm:px-3">
+            <div class="w-full min-h-full flex flex-col">
                 {{ $slot }}
             </div>
         </main>
