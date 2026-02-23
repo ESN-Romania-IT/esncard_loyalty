@@ -1,21 +1,41 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Welcome!') }}
-        </h2>
-    </x-slot>
-
-    <div>
-        @if (session('status'))
-            <div class="alert alert-info">
-                {{ session('status') }}
+    <nav class="relative w-full bg-white shadow-sm z-50">
+        <div class="w-full px-10 py-6 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img src="{{ asset('images/icons/ESN_Logo.svg') }}" alt="ESN Logo" class="h-10 w-auto">
+                <span class="text-xl font-semibold text-black tracking-wide">
+                    ESN Loyalty
+                </span>
             </div>
-        @endif
-        <h1></h1>
-        <a href="/register"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Register</a>
-        <a href="/login" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Login</a>
 
+        </div>
+        <div class="block w-full h-2 bg-gradient-to-r from-[#00AEEF] via-[#8DC63F] via-[#F7941D] to-[#EC008C]"></div>
+    </nav>
 
+    <div class="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6 py-20">
+
+        <h1 class="text-4xl md:text-5xl font-bold text-black mb-6">
+            Join the ESN Loyalty Experience
+        </h1>
+
+        <p class="text-gray-600 text-lg max-w-xl mb-10">
+            Collect points. Unlock exclusive rewards. Be part of the ESN community.
+        </p>
+
+        <div class="flex space-x-4">
+            <a href="/register"
+                class="bg-[#00AEEF] hover:opacity-90 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition">
+                Create Account
+            </a>
+
+            <a href="/login"
+                class="border border-black text-black px-6 py-3 rounded-lg hover:bg-black hover:text-white transition">
+                Login
+            </a>
+        </div>
     </div>
+
+    <footer class="bg-black text-white text-center py-8">
+        © {{ date('Y') }} ESN Loyalty App
+    </footer>
 </x-app-layout>
