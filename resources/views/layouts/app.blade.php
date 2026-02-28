@@ -36,7 +36,7 @@
     </style>
 </head>
 
-<body class="font-sans antialiased m-0">
+<body class="font-sans antialiased m-0  bg-gray-50">
     <div class="min-h-screen flex flex-col bg-black-100 dark:bg-black-900">
         <!-- Page Heading -->
         @isset($header)
@@ -72,7 +72,7 @@
 
 
         {{-- MAIN CONTENT --}}
-        <main class="flex-1 flex justify-center bg-white px-2 sm:px-3">
+        <main class="flex-1 flex justify-center px-2 sm:px-3">
             <div class="w-full min-h-full flex flex-col">
                 {{ $slot }}
             </div>
