@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\BusinessController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\ClientController;
-use App\Http\Controllers\InfoController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\UserController;
@@ -15,9 +14,6 @@ use App\Http\Controllers\Business\BusinessOfferController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'))->name('welcome');
-
-Route::get('/info/terms', [InfoController::class, 'terms_and_conditions'])->name('terms-and-conditions');
-Route::get('/about', [InfoController::class, 'about'])->name('about');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'show'])->name('register.show');
