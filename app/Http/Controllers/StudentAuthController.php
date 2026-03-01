@@ -54,7 +54,7 @@ class StudentAuthController extends Controller
             $student = Student::create([
                 'forename' => $data['name'],
                 'surname' => $data['surname'],
-                'esncard_serial' => Hash::make($data['esncard_serial_code']),
+                'esncard_serial' => $data['esncard_serial_code'],
             ]);
         }
 
@@ -65,6 +65,41 @@ class StudentAuthController extends Controller
 
         return redirect()->intended('/me');
 
+    }
+
+    public function loginForm()
+    {
+        return view('login');
+    }
+
+    public function login(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string'],
+            'surname' => ['required', 'string'],
+            'esncard_serial_code' => ['required', 'string'],
+        ]);
+
+        $student = Student::where('forename', $data['name'])
+            ->where('surname', $data['surname'])
+            ->first();
+
+        if (! $student) {
+            return back()->withErrors([
+                'name' => 'Student not found',
+            ]);
+        }
+
+        if ($data['esncard_serial_code'] !== $student->esncard_serial) {
+            return back()->withErrors([
+                'esncard_serial_code' => 'Invalid ESNcard code',
+            ]);
+        }
+
+        Auth::guard('student')->login($student);
+        $request->session()->regenerate();
+
+        return redirect('/me');
     }
 
     public function logout(Request $request)

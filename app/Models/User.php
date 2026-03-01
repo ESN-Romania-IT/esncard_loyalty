@@ -18,9 +18,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
+        'esncard_code',
+        'role'
     ];
 
     /**
@@ -29,8 +32,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password'
     ];
 
     /**
@@ -41,8 +43,26 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(ClientProfile::class);
+    }
+
+    public function business_profile()
+    {
+        return $this->hasOne(BusinessProfile::class);
+    }
+
+    public function display_name(): string
+    {
+        return match($this->role) {
+            'standard_user' => trim(($this->profile->first_name ?? '').' '.($this->profile->last_name ?? '')),
+            'business_user' => $this->business_profile->business_name ?? '',
+            default => 'Admin',
+        };
     }
 }
