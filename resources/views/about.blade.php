@@ -5,13 +5,8 @@
 
         <div class="relative z-10 h-full max-w-7xl mx-auto grid grid-cols-2 items-center px-8">
 
-            <div class="flex items-center gap-4 pr-4">
-                <img src="{{ asset('images/icons/ESN_Logo.svg') }}" class="h-16" />
-                <div>
-                    <h1 class="text-4xl font-bold ">ESN</h1>
-                    <p class="hidden md:block text-sm">Erasmus Student Network</p>
-                    <p class="font-semibold">Romania</p>
-                </div>
+            <div class="pr-4">
+                <img src="{{ asset('images/icons/esn_ro_logo.png') }}" alt="ESN Romania Logo" class="h-20 w-auto" />
             </div>
 
             <div class="text-white max-w-md justify-self-end text-right">
@@ -99,8 +94,6 @@
         </div>
     </section>
 
-    <footer class="bg-gray-100 py-6 text-center text-sm text-gray-500">
-        © 2026 ESN Romania. All rights reserved.
-    </footer>
+    <x-site-footer />
 
 </x-app-layout>

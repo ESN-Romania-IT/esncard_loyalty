@@ -21,7 +21,8 @@
                         class="w-full border border-gray-300 p-2 rounded-3xl mb-4">
 
                     <label class="block mb-2 text-sm font-medium text-gray-700">Last Name</label>
-                    <input type="text" name="last_name" value="{{ old('last_name', $user->profile->last_name) }}"
+                    <input type="text" name="last_name"
+                        value="{{ old('last_name', $user->profile->last_name ?? '') }}"
                         class="w-full border border-gray-300 p-2 rounded-3xl mb-4">
                 </div>
 

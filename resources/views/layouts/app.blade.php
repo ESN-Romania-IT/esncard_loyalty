@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>ESN Loyalty</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/icons/ESN_Logo.svg') }}">
     <style>
         [x-cloak] {
             display: none !important;

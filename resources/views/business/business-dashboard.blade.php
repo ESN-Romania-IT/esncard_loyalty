@@ -7,15 +7,12 @@
     </header>
     <div class="max-w-6xl mx-auto mt-10 px-6 pb-10">
         <div class="bg-white shadow-md p-6 rounded-3xl border border-gray-200">
-            <p class="mb-4 text-gray-700">You are logged in as a <b>BUSINESS USER</b>.</p>
-
             <div class="text-sm bg-[#2e3192]/5 p-4 rounded-3xl border border-[#2e3192]/20 mb-6">
                 <div><b>Name:</b> {{ $user->business_profile->business_name }}</div>
                 <div><b>Email:</b> {{ $user->email }}</div>
-                <div><b>Role:</b> {{ $user->role }}</div>
             </div>
 
-            <div class="bg-white shadow-md p-6 rounded-3xl border border-gray-200">
+            <div class="bg-white shadow-md p-3 rounded-3xl border border-gray-200">
                 <h2 class="text-xl font-bold mb-4 text-center text-[#2e3192]">QR Scanner</h2>
 
                 <div class="flex justify-center gap-3 mb-4">
@@ -39,7 +36,7 @@
                 <div id="rezultat-scanare" class="mt-4 font-bold text-[#7ac143] text-center"></div>
 
                 <div id="scan-result-card"
-                    class="mt-4 hidden border border-[#7ac143]/40 bg-[#7ac143]/10 p-4 rounded-3xl">
+                    class="mt-4 hidden border border-[#7ac143]/40 bg-[#7ac143]/10 p-4 rounded-xl">
                     <div class="text-sm text-gray-700">Client</div>
                     <div class="text-lg font-semibold" id="scan-client-name"></div>
 
@@ -50,11 +47,7 @@
                         </button>
                     </div>
 
-                    <div id="offers-panel" class="mt-4 hidden border border-[#2e3192]/20 bg-white p-4 rounded-3xl">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="text-sm font-semibold text-gray-700">Available offers</div>
-                        </div>
-
+                    <div id="offers-panel" class="mt-4 hidden">
                         <div id="offers-notice" class="mb-3 text-sm text-[#2e3192] hidden"></div>
                         <div id="offers-error" class="mb-3 text-sm text-red-600 hidden"></div>
                         <div id="offers-loading" class="mb-3 text-sm text-gray-500 hidden">Loading offers...</div>
@@ -90,8 +83,8 @@
                     <div class="space-y-3">
                         @foreach ($activeOffers as $offer)
                             <div class="border border-gray-200 rounded-3xl p-4 flex items-center justify-between gap-4">
-                                <div>
-                                    <div class="font-semibold text-gray-800">{{ $offer->title }}</div>
+                                <div class="w-[80%]">
+                                    <div class="font-semibold text-gray-800 break-words">{{ $offer->title }}</div>
                                     <div
                                         class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-[#7ac143]/15 text-[#4f8a27] mt-1">
                                         {{ $offer->redemptions_count }} redemption(s)
@@ -264,12 +257,13 @@
                             header.className = 'flex items-start justify-between gap-3';
 
                             const title = document.createElement('div');
-                            title.className = 'font-semibold text-gray-800';
+                            title.className = 'font-semibold text-gray-800 max-w-[80%] break-words';
                             title.textContent = offer.title;
 
                             const usage = document.createElement('div');
-                            usage.className = 'text-xs px-2 py-1 rounded-full bg-[#7ac143]/15 text-[#4f8a27]';
-                            usage.textContent = `${offer.used_count} / ${offer.uses_per_client} redeemed`;
+                            usage.className =
+                                'text-xs px-2 py-1 rounded-full bg-[#7ac143]/15 text-[#4f8a27] shrink-0';
+                            usage.textContent = `${offer.used_count} / ${offer.uses_per_client}`;
 
                             header.appendChild(title);
                             header.appendChild(usage);
