@@ -24,10 +24,6 @@
                         </div>
                     </div>
 
-                    <div class="px-4 py-2 bg-[#EC008C]/10 text-[#EC008C] text-xs font-semibold rounded-full">
-                        {{ strtoupper($user->role) }}
-                    </div>
-
                 </div>
 
                 <!-- USER INFO -->
@@ -82,7 +78,7 @@ shadow-md transition duration-200">
                     <div id="qrOverlay"
                         class="fixed inset-0 bg-black/70 flex items-center justify-center hidden cursor-pointer z-50">
                         <div class="bg-white p-6 rounded-2xl shadow-2xl">
-                            {!! QrCode::size(400)->generate($qrData) !!}
+                            {!! QrCode::size(360)->generate($qrData) !!}
                         </div>
                     </div>
                 @endif
@@ -117,8 +113,7 @@ shadow-md transition duration-200">
                                             </div>
 
                                             <div
-                                                class="px-3 py-1 rounded-full text-xs font-semibold
-bg-[#8DC63F]/20 text-[#3c8d1e]">
+                                                class="px-3 py-1 rounded-full text-xs font-semibold bg-[#8DC63F]/20 text-[#3c8d1e]">
                                                 {{ $offer->redeemed_count }} / {{ $offer->uses_per_client }}
                                             </div>
                                         </div>

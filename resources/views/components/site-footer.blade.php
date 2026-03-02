@@ -5,10 +5,10 @@
     <a href="{{ url('/terms-and-conditions') }}" class="text-sm text-black hover:underline px-3">
         Terms & Conditions
     </a>
+    <a href="{{ auth()->check() ? route('me') : route('login') }}" class="text-sm text-black hover:underline px-3">
+        Login
+    </a>
     @guest
-        <a href="{{ route('login') }}" class="text-sm text-black hover:underline px-3">
-            Login
-        </a>
         <a href="{{ route('register.show') }}" class="text-sm text-black hover:underline px-3">
             Register
         </a>

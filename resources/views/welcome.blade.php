@@ -23,19 +23,17 @@
         </p>
 
         <div class="flex space-x-4">
-            <a href="/register"
+            <a href="{{ auth()->check() ? route('me') : route('register.show') }}"
                 class="bg-[#00AEEF] hover:opacity-90 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition">
                 Create Account
             </a>
 
-            <a href="/login"
+            <a href="{{ auth()->check() ? route('me') : route('login') }}"
                 class="border border-black text-black px-6 py-3 rounded-lg hover:bg-black hover:text-white transition">
                 Login
             </a>
         </div>
     </div>
 
-    <footer class="bg-black text-white text-center py-8">
-        © {{ date('Y') }} ESN Loyalty App
-    </footer>
+    <x-site-footer />
 </x-app-layout>
