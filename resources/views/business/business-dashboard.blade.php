@@ -77,27 +77,29 @@
                     </a>
                 </div>
 
-                @if ($activeOffers->isEmpty())
-                    <div class="text-sm text-gray-500">No active offers.</div>
-                @else
-                    <div class="space-y-3">
-                        @foreach ($activeOffers as $offer)
-                            <div class="border border-gray-200 rounded-3xl p-4 flex items-center justify-between gap-4">
-                                <div class="w-[80%]">
-                                    <div class="font-semibold text-gray-800 break-words">{{ $offer->title }}</div>
-                                    <div
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-[#7ac143]/15 text-[#4f8a27] mt-1">
-                                        {{ $offer->redemptions_count }} redemption(s)
-                                    </div>
+                <div id="active-offers-empty"
+                    class="text-sm text-gray-500 {{ $activeOffers->isEmpty() ? '' : 'hidden' }}">
+                    No active offers.
+                </div>
+
+                <div id="active-offers-list" class="space-y-3 {{ $activeOffers->isEmpty() ? 'hidden' : '' }}">
+                    @foreach ($activeOffers as $offer)
+                        <div class="border border-gray-200 rounded-3xl p-4 flex items-center justify-between gap-4"
+                            data-offer-id="{{ $offer->id }}">
+                            <div class="w-[80%]">
+                                <div class="font-semibold text-gray-800 break-words">{{ $offer->title }}</div>
+                                <div class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-[#7ac143]/15 text-[#4f8a27] mt-1"
+                                    data-redemptions-count>
+                                    {{ $offer->redemptions_count }} redemption(s)
                                 </div>
-                                <a href="{{ route('business.offers.show', $offer) }}"
-                                    class="bg-[#2e3192] text-white px-4 py-2 rounded-3xl text-sm hover:bg-[#25287a]">
-                                    View
-                                </a>
                             </div>
-                        @endforeach
-                    </div>
-                @endif
+                            <a href="{{ route('business.offers.show', $offer) }}"
+                                class="bg-[#2e3192] text-white px-4 py-2 rounded-3xl text-sm hover:bg-[#25287a]">
+                                View
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
             </div>
 
             <script src="https://unpkg.com/html5-qrcode"></script>
@@ -119,10 +121,88 @@
                     const offersError = document.getElementById('offers-error');
                     const offersNotice = document.getElementById('offers-notice');
                     const offersDoneBtn = document.getElementById('btn-offers-done');
+                    const activeOffersList = document.getElementById('active-offers-list');
+                    const activeOffersEmpty = document.getElementById('active-offers-empty');
 
                     let html5QrCode = null;
                     let isRunning = false;
                     let currentClientId = null;
+                    let isProcessingScan = false;
+                    let scanErrorCount = 0;
+                    const redemptionChannel = 'BroadcastChannel' in window ? new BroadcastChannel(
+                        'esn-redemptions') : null;
+
+                    function notifyRedemptionUpdated() {
+                        const timestamp = Date.now();
+
+                        if (redemptionChannel) {
+                            redemptionChannel.postMessage({
+                                type: 'redemption-updated',
+                                at: timestamp,
+                            });
+                        }
+
+                        try {
+                            localStorage.setItem('esn:redemption-updated', String(timestamp));
+                        } catch (_) {
+                            // ignore storage write failures
+                        }
+                    }
+
+                    function escapeHtml(value) {
+                        return String(value)
+                            .replaceAll('&', '&amp;')
+                            .replaceAll('<', '&lt;')
+                            .replaceAll('>', '&gt;')
+                            .replaceAll('"', '&quot;')
+                            .replaceAll("'", '&#039;');
+                    }
+
+                    function renderActiveOffers(offers) {
+                        if (!Array.isArray(offers) || !offers.length) {
+                            activeOffersList.classList.add('hidden');
+                            activeOffersList.innerHTML = '';
+                            activeOffersEmpty.classList.remove('hidden');
+                            return;
+                        }
+
+                        activeOffersEmpty.classList.add('hidden');
+                        activeOffersList.classList.remove('hidden');
+                        activeOffersList.innerHTML = offers.map((offer) => `
+                            <div class="border border-gray-200 rounded-3xl p-4 flex items-center justify-between gap-4" data-offer-id="${offer.id}">
+                                <div class="w-[80%]">
+                                    <div class="font-semibold text-gray-800 break-words">${escapeHtml(offer.title)}</div>
+                                    <div class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-[#7ac143]/15 text-[#4f8a27] mt-1" data-redemptions-count>
+                                        ${offer.redemptions_count} redemption(s)
+                                    </div>
+                                </div>
+                                <a href="${offer.show_url}" class="bg-[#2e3192] text-white px-4 py-2 rounded-3xl text-sm hover:bg-[#25287a]">
+                                    View
+                                </a>
+                            </div>
+                        `).join('');
+                    }
+
+                    async function refreshActiveOffers() {
+                        const response = await fetch('{{ route('business.dashboard.stats') }}', {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            }
+                        });
+
+                        if (response.status === 401) {
+                            window.location.href = '{{ route('login') }}';
+                            return;
+                        }
+
+                        const data = await response.json();
+                        if (!response.ok || !data?.ok) {
+                            return;
+                        }
+
+                        renderActiveOffers(data.offers || []);
+                    }
 
                     function setButtons(running) {
                         isRunning = running;
@@ -389,6 +469,9 @@
                             loading: false,
                             notice: data?.message || 'Redemption added.'
                         });
+
+                        await refreshActiveOffers();
+                        notifyRedemptionUpdated();
                         return data?.added ?? 0;
                     }
 
@@ -473,8 +556,16 @@
                     async function startScanner() {
                         errorEl.textContent = '';
                         resetResult();
+                        scanErrorCount = 0;
+                        isProcessingScan = false;
 
                         if (isRunning) return;
+
+                        if (typeof Html5Qrcode === 'undefined') {
+                            errorEl.textContent =
+                                'QR scanner failed to load. Please refresh the page and try again.';
+                            return;
+                        }
 
                         try {
                             qrRegion.classList.remove('hidden');
@@ -485,9 +576,21 @@
                                     facingMode: "environment"
                                 }, {
                                     fps: 10,
-                                    qrbox: 250
+                                    qrbox: (viewfinderWidth, viewfinderHeight) => {
+                                        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                                        const size = Math.max(180, Math.floor(minEdge * 0.7));
+                                        return {
+                                            width: size,
+                                            height: size,
+                                        };
+                                    }
                                 },
                                 async (decodedText) => {
+                                        if (isProcessingScan) {
+                                            return;
+                                        }
+
+                                        isProcessingScan = true;
                                         try {
                                             const qrData = extractQrData(decodedText);
 
@@ -506,14 +609,31 @@
                                             clientNameEl.textContent = `${client.first_name} ${client.last_name}`;
                                             resultCard.classList.remove('hidden');
                                             resultEl.textContent = 'QR verified.';
+                                            errorEl.textContent = '';
+
+                                            await stopScanner();
                                         } catch (e) {
                                             errorEl.textContent = e?.message || 'Could not verify QR.';
                                         } finally {
-                                            await stopScanner();
+                                            isProcessingScan = false;
                                         }
                                     },
-                                    () => {
-                                        /* ignore scan errors */
+                                    (scanErrorMessage) => {
+                                        scanErrorCount += 1;
+
+                                        if (scanErrorCount % 30 !== 0) {
+                                            return;
+                                        }
+
+                                        if (typeof scanErrorMessage === 'string' && scanErrorMessage.includes(
+                                                'No MultiFormat Readers were able to detect')) {
+                                            errorEl.textContent =
+                                                'Point the camera at the full QR, improve lighting, and hold steady.';
+                                            return;
+                                        }
+
+                                        errorEl.textContent =
+                                            'Scanner is having trouble reading. Move closer and avoid blur/glare.';
                                     }
                             );
 
@@ -567,6 +687,24 @@
                     window.addEventListener('beforeunload', () => {
                         if (html5QrCode && isRunning) {
                             html5QrCode.stop().catch(() => {});
+                        }
+
+                        if (redemptionChannel) {
+                            redemptionChannel.close();
+                        }
+                    });
+
+                    if (redemptionChannel) {
+                        redemptionChannel.addEventListener('message', (event) => {
+                            if (event?.data?.type === 'redemption-updated') {
+                                refreshActiveOffers().catch(() => {});
+                            }
+                        });
+                    }
+
+                    window.addEventListener('storage', (event) => {
+                        if (event.key === 'esn:redemption-updated') {
+                            refreshActiveOffers().catch(() => {});
                         }
                     });
 
