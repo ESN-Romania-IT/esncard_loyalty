@@ -47,6 +47,9 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/dashboard', [ClientDashboardController::class, 'index'])
                 ->name('dashboard');
+
+            Route::get('/dashboard/stats', [ClientDashboardController::class, 'stats'])
+                ->name('dashboard.stats');
         });
 
     // BUSINESS (business_user)
@@ -56,6 +59,9 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/dashboard', [BusinessDashboardController::class, 'index'])
                 ->name('dashboard');
+
+            Route::get('/dashboard/stats', [BusinessDashboardController::class, 'activeOffersStats'])
+                ->name('dashboard.stats');
 
             Route::get('/offers', [BusinessOfferController::class, 'index'])
                 ->name('offers.index');

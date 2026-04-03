@@ -34,6 +34,36 @@ class BusinessDashboardController extends Controller
         ]);
     }
 
+    public function activeOffersStats(Request $request): JsonResponse
+    {
+        $businessProfile = $request->user()?->business_profile;
+
+        if (!$businessProfile) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Business profile not found.',
+            ], 403);
+        }
+
+        $offers = Offer::query()
+            ->where('business_profile_id', $businessProfile->id)
+            ->where('is_active', true)
+            ->withCount('redemptions')
+            ->orderBy('title')
+            ->get()
+            ->map(fn ($offer) => [
+                'id' => $offer->id,
+                'title' => $offer->title,
+                'redemptions_count' => (int) $offer->redemptions_count,
+                'show_url' => route('business.offers.show', $offer),
+            ]);
+
+        return response()->json([
+            'ok' => true,
+            'offers' => $offers,
+        ]);
+    }
+
     public function verifyQr(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -223,7 +253,7 @@ class BusinessDashboardController extends Controller
             return null;
         }
 
-        if ((int) $exp < now()->timestamp) {
+        if ((int) $exp < now()->subSeconds(30)->timestamp) {
             return null;
         }
 
