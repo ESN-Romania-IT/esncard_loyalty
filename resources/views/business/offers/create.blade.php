@@ -14,7 +14,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('business.offers.store') }}" class="space-y-4">
+        <form method="POST" action="{{ route('business.offers.store') }}" class="space-y-4" id="offer-form">
             @csrf
 
             <div>
@@ -27,10 +27,40 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Offer Type</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="type" value="discount" class="accent-[#2e3192]"
+                            {{ old('type', 'discount') === 'discount' ? 'checked' : '' }}>
+                        <span class="text-sm text-gray-700">Discount</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="type" value="stamp_card" class="accent-[#2e3192]"
+                            {{ old('type') === 'stamp_card' ? 'checked' : '' }}>
+                        <span class="text-sm text-gray-700">Stamp Card</span>
+                    </label>
+                </div>
+                @error('type')
+                    <p class="text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div id="field-uses-per-client" class="{{ old('type') === 'stamp_card' ? 'hidden' : '' }}">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Max uses per client</label>
                 <input type="number" name="uses_per_client" value="{{ old('uses_per_client', 1) }}" min="1"
-                    max="1000" class="w-full border p-2 rounded-3xl" required>
+                    max="1000" class="w-full border p-2 rounded-3xl">
                 @error('uses_per_client')
+                    <p class="text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div id="field-stamps-required" class="{{ old('type') === 'stamp_card' ? '' : 'hidden' }}">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Stamps required to complete</label>
+                <input type="number" name="stamps_required" value="{{ old('stamps_required', 10) }}" min="2"
+                    max="1000" class="w-full border p-2 rounded-3xl">
+                <p class="text-xs text-gray-500 mt-1">How many stamps a client must collect before redeeming the reward.
+                </p>
+                @error('stamps_required')
                     <p class="text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -51,6 +81,28 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const radios = document.querySelectorAll('input[name="type"]');
+            const fieldUses = document.getElementById('field-uses-per-client');
+            const fieldStamps = document.getElementById('field-stamps-required');
+
+            function updateFields() {
+                const selected = document.querySelector('input[name="type"]:checked')?.value;
+                if (selected === 'stamp_card') {
+                    fieldUses.classList.add('hidden');
+                    fieldStamps.classList.remove('hidden');
+                } else {
+                    fieldUses.classList.remove('hidden');
+                    fieldStamps.classList.add('hidden');
+                }
+            }
+
+            radios.forEach(r => r.addEventListener('change', updateFields));
+            updateFields();
+        });
+    </script>
 
     <x-site-footer />
 </x-app-layout>

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\ClientProfile;
 use App\Models\BusinessProfile;
 use App\Models\OfferRedemption;
+use App\Models\ClientStamp;
 
 class ClientController extends Controller
 {
@@ -44,7 +45,7 @@ class ClientController extends Controller
             ->select('id', 'business_name')
             ->with(['offers' => function ($q) {
                 $q->where('is_active', true)
-                ->select('id', 'business_profile_id', 'title', 'uses_per_client');
+                ->select('id', 'business_profile_id', 'title', 'uses_per_client', 'type');
             }])
             ->orderBy('business_name')
             ->get();
@@ -107,13 +108,24 @@ class ClientController extends Controller
             'signature' => $signature,
         ]);
 
+        // Stamp balances per business for this client (un-redeemed only)
+        $stampsByBusiness = ClientStamp::query()
+            ->where('client_profile_id', $client->id)
+            ->whereNull('redeemed_at')
+            ->selectRaw('business_profile_id, COUNT(*) as stamp_balance')
+            ->groupBy('business_profile_id')
+            ->with('businessProfile:id,business_name')
+            ->get()
+            ->keyBy('business_profile_id');
+
         return view('admin.clients.show', [
             'q' => $q,
             'client' => $client,
             'rows' => $rows,
             'businesses' => $businesses,
             'usedByOffer' => $usedByOffer,
-            'qrData' => $qrData
+            'qrData' => $qrData,
+            'stampsByBusiness' => $stampsByBusiness,
         ]);
     }
 }

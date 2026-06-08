@@ -10,6 +10,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ClientRedemptionController;
 use App\Http\Controllers\Admin\OfferRedemptionController;
+use App\Http\Controllers\Admin\AdminClientStampController;
 use App\Http\Controllers\Business\BusinessOfferController;
 use Illuminate\Support\Facades\Route;
 
@@ -92,6 +93,9 @@ Route::middleware('auth')->group(function () {
 
             Route::post('/qr/redeem', [BusinessDashboardController::class, 'redeem'])
                 ->name('qr.redeem');
+
+            Route::post('/qr/stamp', [BusinessDashboardController::class, 'stamp'])
+                ->name('qr.stamp');
         });
 
     // ADMIN (admin)
@@ -107,6 +111,8 @@ Route::middleware('auth')->group(function () {
             Route::resource('clients', ClientController::class)->only(['index','show']);
             Route::resource('clients.redemptions', ClientRedemptionController::class)->only(['store', 'destroy']);
             Route::delete('clients/{client}/redemptions', [ClientRedemptionController::class, 'destroyForOffer'])->name('clients.redemptions.destroyForOffer');
+            Route::post('clients/{client}/stamps', [AdminClientStampController::class, 'store'])->name('clients.stamps.store');
+            Route::delete('clients/{client}/stamps', [AdminClientStampController::class, 'destroyForBusiness'])->name('clients.stamps.destroyForBusiness');
 
             Route::resource('businesses', BusinessController::class)->only(['index','show']);
             Route::resource('businesses.offers', OfferController::class);
