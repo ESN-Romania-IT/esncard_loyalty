@@ -15,30 +15,64 @@
                 </a>
             </div>
 
-            <form method="POST" action="{{ route('admin.businesses.offers.update', [$business, $offer]) }}">
+            @if (session('status'))
+                <div class="mb-4 p-3 rounded bg-green-100 text-green-800 text-sm">{{ session('status') }}</div>
+            @endif
+            @if ($errors->any())
+                <div class="mb-4 p-3 rounded bg-red-100 text-red-800 text-sm">Please fix the errors below.</div>
+            @endif
+
+            <form method="POST" action="{{ route('admin.businesses.offers.update', [$business, $offer]) }}"
+                class="space-y-4">
                 @csrf
                 @method('PUT')
 
-                <label class="block mb-2 text-sm font-medium text-gray-700">Title</label>
-                <input type="text" name="title" value="{{ old('title', $offer->title) }}"
-                    class="w-full border border-gray-300 p-2 rounded-3xl mb-2">
-                @error('title')
-                    <p class="text-red-600 text-sm mb-4">{{ $message }}</p>
-                @enderror
+                <div>
+                    <label class="block mb-1 text-sm font-medium text-gray-700">Title</label>
+                    <input type="text" name="title" value="{{ old('title', $offer->title) }}"
+                        class="w-full border border-gray-300 p-2 rounded-3xl">
+                    @error('title')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                <label class="block mb-2 text-sm font-medium text-gray-700">Max uses per client</label>
-                <input type="number" name="uses_per_client" min="1"
-                    value="{{ old('uses_per_client', $offer->uses_per_client) }}"
-                    class="w-full border border-gray-300 p-2 rounded-3xl mb-2">
-                @error('uses_per_client')
-                    <p class="text-red-600 text-sm mb-4">{{ $message }}</p>
-                @enderror
+                <div class="bg-gray-50 rounded-xl p-3 text-sm text-gray-600">
+                    <span class="font-medium">Type:</span>
+                    {{ $offer->type === 'stamp_card' ? 'Stamp Card' : 'Discount' }}
+                    <span class="text-xs text-gray-400 ml-1">(cannot be changed)</span>
+                </div>
 
-                <div class="mb-4">
-                    <label class="inline-flex items-center">
-                        <input type="checkbox" name="is_active" value="1" class="mr-2"
+                @if ($offer->type === 'stamp_card')
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">Stamps required to complete</label>
+                        <input type="number" name="stamps_required" min="2" max="1000"
+                            value="{{ old('stamps_required', $offer->stamps_required) }}"
+                            class="w-full border border-gray-300 p-2 rounded-3xl" required>
+                        <p class="text-xs text-gray-500 mt-1">Changing this will affect future completions; existing
+                            stamps are not affected.</p>
+                        @error('stamps_required')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @else
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">Max uses per client</label>
+                        <input type="number" name="uses_per_client" min="1" max="1000"
+                            value="{{ old('uses_per_client', $offer->uses_per_client) }}"
+                            class="w-full border border-gray-300 p-2 rounded-3xl" required>
+                        <p class="text-xs text-gray-500 mt-1">If reduced below existing redemptions, no new redemptions
+                            will be allowed for those clients.</p>
+                        @error('uses_per_client')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endif
+
+                <div>
+                    <label class="inline-flex items-center gap-2">
+                        <input type="checkbox" name="is_active" value="1" class="accent-[#7ac143]"
                             {{ old('is_active', $offer->is_active) ? 'checked' : '' }}>
-                        <span>Active</span>
+                        <span class="text-sm text-gray-700">Active</span>
                     </label>
                     @error('is_active')
                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
