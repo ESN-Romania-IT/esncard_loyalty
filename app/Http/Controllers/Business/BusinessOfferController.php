@@ -89,15 +89,23 @@ class BusinessOfferController extends Controller
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'uses_per_client' => ['required', 'integer', 'min:1', 'max:1000'],
+            'uses_per_client' => ['required_if:type,discount', 'nullable', 'integer', 'min:1', 'max:1000'],
+            'stamps_required' => ['required_if:type,stamp_card', 'nullable', 'integer', 'min:2', 'max:1000'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        $offer->update([
+        $update = [
             'title' => $data['title'],
-            'uses_per_client' => $data['uses_per_client'],
             'is_active' => (bool) ($data['is_active'] ?? false),
-        ]);
+        ];
+
+        if ($offer->type === 'discount') {
+            $update['uses_per_client'] = $data['uses_per_client'] ?? $offer->uses_per_client;
+        } else {
+            $update['stamps_required'] = $data['stamps_required'] ?? $offer->stamps_required;
+        }
+
+        $offer->update($update);
 
         return redirect()
             ->route('business.offers.show', $offer)
@@ -121,14 +129,18 @@ class BusinessOfferController extends Controller
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'uses_per_client' => ['required', 'integer', 'min:1', 'max:1000'],
+            'type' => ['required', 'in:discount,stamp_card'],
+            'uses_per_client' => ['required_if:type,discount', 'nullable', 'integer', 'min:1', 'max:1000'],
+            'stamps_required' => ['required_if:type,stamp_card', 'nullable', 'integer', 'min:2', 'max:1000'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
         Offer::create([
             'business_profile_id' => $businessProfile->id,
             'title' => $data['title'],
-            'uses_per_client' => $data['uses_per_client'],
+            'type' => $data['type'],
+            'uses_per_client' => $data['type'] === 'discount' ? ($data['uses_per_client'] ?? 1) : null,
+            'stamps_required' => $data['type'] === 'stamp_card' ? ($data['stamps_required'] ?? null) : null,
             'is_active' => (bool) ($data['is_active'] ?? false),
         ]);
 

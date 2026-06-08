@@ -40,12 +40,28 @@
                     <div class="text-sm text-gray-700">Client</div>
                     <div class="text-lg font-semibold" id="scan-client-name"></div>
 
-                    <div class="mt-4">
+                    <div class="mt-4 flex flex-wrap items-center gap-3">
                         <button id="btn-apply-offer" type="button"
                             class="bg-[#ec008c] text-white px-4 py-2 rounded-3xl hover:bg-[#be0070]">
                             View offers
                         </button>
+                        {{-- Quick stamp award: always visible once a client is scanned --}}
+                        <div id="quick-stamp-area" class="flex items-center gap-2">
+                            <div id="quick-stamp-balance" class="text-xs font-semibold text-[#ec008c] hidden"></div>
+                            <button id="quick-stamp-minus" type="button"
+                                class="w-8 h-8 text-lg rounded-3xl bg-[#ec008c]/10 text-[#ec008c] hover:bg-[#ec008c]/20 leading-none">−</button>
+                            <span id="quick-stamp-qty"
+                                class="w-6 text-center text-sm font-semibold select-none">1</span>
+                            <button id="quick-stamp-plus" type="button"
+                                class="w-8 h-8 text-lg rounded-3xl bg-[#ec008c]/10 text-[#ec008c] hover:bg-[#ec008c]/20 leading-none">+</button>
+                            <button id="quick-stamp-btn" type="button"
+                                class="bg-[#ec008c] text-white px-3 py-1.5 rounded-3xl text-sm hover:bg-[#be0070]">
+                                Stamp
+                            </button>
+                        </div>
                     </div>
+                    <div id="quick-stamp-notice" class="mt-1 text-xs text-[#2e3192] hidden"></div>
+                    <div id="quick-stamp-error" class="mt-1 text-xs text-red-600 hidden"></div>
 
                     <div id="offers-panel" class="mt-4 hidden">
                         <div id="offers-notice" class="mb-3 text-sm text-[#2e3192] hidden"></div>
@@ -124,9 +140,20 @@
                     const activeOffersList = document.getElementById('active-offers-list');
                     const activeOffersEmpty = document.getElementById('active-offers-empty');
 
+                    const quickStampBalance = document.getElementById('quick-stamp-balance');
+                    const quickStampQtyEl = document.getElementById('quick-stamp-qty');
+                    const quickStampMinus = document.getElementById('quick-stamp-minus');
+                    const quickStampPlus = document.getElementById('quick-stamp-plus');
+                    const quickStampBtn = document.getElementById('quick-stamp-btn');
+                    const quickStampNotice = document.getElementById('quick-stamp-notice');
+                    const quickStampError = document.getElementById('quick-stamp-error');
+
                     let html5QrCode = null;
                     let isRunning = false;
                     let currentClientId = null;
+                    let sharedStampBalance = 0;
+                    let stampBalanceBadgeEl = null;
+                    let quickStampQtyVal = 1;
                     let isProcessingScan = false;
                     let scanErrorCount = 0;
                     const redemptionChannel = 'BroadcastChannel' in window ? new BroadcastChannel(
@@ -226,6 +253,15 @@
                         }
                     }
 
+                    function updateStampBalanceDisplay() {
+                        const text = `${sharedStampBalance} stamp(s)`;
+                        quickStampBalance.textContent = text;
+                        quickStampBalance.classList.remove('hidden');
+                        if (stampBalanceBadgeEl) {
+                            stampBalanceBadgeEl.textContent = `Stamp balance: ${sharedStampBalance}`;
+                        }
+                    }
+
                     function resetResult() {
                         resultEl.textContent = '';
                         errorEl.textContent = '';
@@ -240,6 +276,13 @@
                         offersNotice.classList.add('hidden');
                         offersError.classList.add('hidden');
                         currentClientId = null;
+                        sharedStampBalance = 0;
+                        stampBalanceBadgeEl = null;
+                        quickStampQtyVal = 1;
+                        quickStampQtyEl.textContent = '1';
+                        quickStampBalance.classList.add('hidden');
+                        quickStampNotice.classList.add('hidden');
+                        quickStampError.classList.add('hidden');
                     }
 
                     async function closeFlow() {
@@ -329,98 +372,281 @@
                             return;
                         }
 
-                        offers.forEach((offer) => {
-                            const row = document.createElement('div');
-                            row.className = 'border border-[#2e3192]/20 rounded-3xl p-3 bg-[#2e3192]/[0.03]';
+                        sharedStampBalance = data.stamp_balance || 0;
+                        stampBalanceBadgeEl = null;
+                        updateStampBalanceDisplay();
 
-                            const header = document.createElement('div');
-                            header.className = 'flex items-start justify-between gap-3';
+                        const stampOffers = offers.filter(o => o.type === 'stamp_card');
+                        const discountOffers = offers.filter(o => o.type === 'discount');
 
-                            const title = document.createElement('div');
-                            title.className = 'font-semibold text-gray-800 max-w-[80%] break-words';
-                            title.textContent = offer.title;
+                        // Stamp Offers collapsible section
+                        if (stampOffers.length > 0) {
+                            const {
+                                section: stampSection,
+                                body: stampBody
+                            } = makeCollapsible(
+                                'Stamp Offers',
+                                'text-[#ec008c]',
+                                'border-[#ec008c]/30',
+                                'bg-[#ec008c]/[0.04]'
+                            );
 
-                            const usage = document.createElement('div');
-                            usage.className =
-                                'text-xs px-2 py-1 rounded-full bg-[#7ac143]/15 text-[#4f8a27] shrink-0';
-                            usage.textContent = `${offer.used_count} / ${offer.uses_per_client}`;
+                            // Balance display row at top of section body
+                            stampBalanceBadgeEl = document.createElement('div');
+                            stampBalanceBadgeEl.className =
+                                'text-sm font-semibold text-[#ec008c] pb-2 border-b border-[#ec008c]/20';
+                            stampBalanceBadgeEl.textContent = `Stamp balance: ${sharedStampBalance}`;
+                            stampBody.appendChild(stampBalanceBadgeEl);
 
-                            header.appendChild(title);
-                            header.appendChild(usage);
-
-                            const actions = document.createElement('div');
-                            actions.className = 'mt-3 flex flex-wrap items-center gap-3';
-
-                            const qtyWrapper = document.createElement('div');
-                            qtyWrapper.className = 'flex items-center gap-2';
-
-                            const minusBtn = document.createElement('button');
-                            minusBtn.type = 'button';
-                            minusBtn.textContent = '−';
-                            minusBtn.className =
-                                'w-10 h-10 text-xl rounded-3xl bg-[#2e3192]/10 text-[#2e3192] hover:bg-[#2e3192]/20';
-
-                            const qtyInput = document.createElement('input');
-                            qtyInput.type = 'text';
-                            qtyInput.readOnly = true;
-                            qtyInput.value = '1';
-                            qtyInput.className =
-                                'w-14 h-10 text-center border border-[#2e3192]/20 rounded-3xl text-base';
-
-                            const plusBtn = document.createElement('button');
-                            plusBtn.type = 'button';
-                            plusBtn.textContent = '+';
-                            plusBtn.className =
-                                'w-10 h-10 text-xl rounded-3xl bg-[#2e3192]/10 text-[#2e3192] hover:bg-[#2e3192]/20';
-
-                            minusBtn.addEventListener('click', () => {
-                                const current = parseInt(qtyInput.value, 10) || 1;
-                                qtyInput.value = String(Math.max(1, current - 1));
+                            stampOffers.forEach(offer => {
+                                const row = document.createElement('div');
+                                row.className = 'border border-[#2e3192]/20 rounded-3xl p-3 bg-white';
+                                renderStampCardRow(row, offer);
+                                stampBody.appendChild(row);
                             });
 
-                            plusBtn.addEventListener('click', () => {
-                                const current = parseInt(qtyInput.value, 10) || 1;
-                                qtyInput.value = String(Math.min(100, current + 1));
+                            offersList.appendChild(stampSection);
+                        }
+
+                        // General Offers collapsible section
+                        if (discountOffers.length > 0) {
+                            const {
+                                section: discountSection,
+                                body: discountBody
+                            } = makeCollapsible(
+                                'General Offers',
+                                'text-[#2e3192]',
+                                'border-[#2e3192]/20',
+                                'bg-[#2e3192]/[0.03]'
+                            );
+
+                            discountOffers.forEach(offer => {
+                                const row = document.createElement('div');
+                                row.className = 'border border-[#2e3192]/10 rounded-3xl p-3 bg-white';
+                                renderDiscountRow(row, offer);
+                                discountBody.appendChild(row);
                             });
 
-                            qtyWrapper.appendChild(minusBtn);
-                            qtyWrapper.appendChild(qtyInput);
-                            qtyWrapper.appendChild(plusBtn);
-
-                            const redeemBtn = document.createElement('button');
-                            redeemBtn.type = 'button';
-                            redeemBtn.textContent = 'Redeem';
-                            redeemBtn.className =
-                                'bg-[#7ac143] text-white px-4 py-2 rounded-3xl text-sm hover:bg-[#669f35]';
-                            redeemBtn.addEventListener('click', async () => {
-                                const qty = parseInt(qtyInput.value, 10);
-
-                                if (!qty || qty < 1) {
-                                    setOffersStatus({
-                                        error: 'Quantity must be at least 1.'
-                                    });
-                                    return;
-                                }
-
-                                const added = await redeemOffer(offer.id, qty);
-                                if (added > 0) {
-                                    offer.used_count += added;
-                                    usage.textContent =
-                                        `${offer.used_count} / ${offer.uses_per_client} redeemed`;
-                                }
-                            });
-
-                            actions.appendChild(qtyWrapper);
-                            actions.appendChild(redeemBtn);
-
-                            row.appendChild(header);
-                            row.appendChild(actions);
-                            offersList.appendChild(row);
-                        });
+                            offersList.appendChild(discountSection);
+                        }
 
                         setOffersStatus({
                             loading: false
                         });
+                    }
+
+                    function makeCollapsible(title, colorClass, borderClass, bgClass) {
+                        const section = document.createElement('div');
+                        section.className = `border ${borderClass} rounded-3xl overflow-hidden`;
+
+                        const toggle = document.createElement('button');
+                        toggle.type = 'button';
+                        toggle.className =
+                            `w-full flex items-center justify-between px-4 py-3 ${bgClass} ${colorClass} font-semibold text-sm`;
+                        toggle.innerHTML = `<span>${title}</span><span class="toggle-icon text-base">▾</span>`;
+
+                        const body = document.createElement('div');
+                        body.className = 'p-3 space-y-3';
+
+                        toggle.addEventListener('click', () => {
+                            const hidden = body.classList.toggle('hidden');
+                            toggle.querySelector('.toggle-icon').textContent = hidden ? '▸' : '▾';
+                        });
+
+                        section.appendChild(toggle);
+                        section.appendChild(body);
+                        return {
+                            section,
+                            body
+                        };
+                    }
+
+                    function buildQtyControls(min, max) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'flex items-center gap-2';
+
+                        const minusBtn = document.createElement('button');
+                        minusBtn.type = 'button';
+                        minusBtn.textContent = '−';
+                        minusBtn.className =
+                            'w-10 h-10 text-xl rounded-3xl bg-[#2e3192]/10 text-[#2e3192] hover:bg-[#2e3192]/20';
+
+                        const qtyInput = document.createElement('input');
+                        qtyInput.type = 'text';
+                        qtyInput.readOnly = true;
+                        qtyInput.value = '1';
+                        qtyInput.className = 'w-14 h-10 text-center border border-[#2e3192]/20 rounded-3xl text-base';
+
+                        const plusBtn = document.createElement('button');
+                        plusBtn.type = 'button';
+                        plusBtn.textContent = '+';
+                        plusBtn.className =
+                            'w-10 h-10 text-xl rounded-3xl bg-[#2e3192]/10 text-[#2e3192] hover:bg-[#2e3192]/20';
+
+                        minusBtn.addEventListener('click', () => {
+                            const current = parseInt(qtyInput.value, 10) || 1;
+                            qtyInput.value = String(Math.max(min ?? 1, current - 1));
+                        });
+
+                        plusBtn.addEventListener('click', () => {
+                            const current = parseInt(qtyInput.value, 10) || 1;
+                            qtyInput.value = String(Math.min(max ?? 100, current + 1));
+                        });
+
+                        wrapper.appendChild(minusBtn);
+                        wrapper.appendChild(qtyInput);
+                        wrapper.appendChild(plusBtn);
+                        return {
+                            wrapper,
+                            qtyInput
+                        };
+                    }
+
+                    function renderDiscountRow(row, offer) {
+                        const header = document.createElement('div');
+                        header.className = 'flex items-start justify-between gap-3';
+
+                        const title = document.createElement('div');
+                        title.className = 'font-semibold text-gray-800 max-w-[80%] break-words';
+                        title.textContent = offer.title;
+
+                        const usage = document.createElement('div');
+                        usage.className = 'text-xs px-2 py-1 rounded-full bg-[#7ac143]/15 text-[#4f8a27] shrink-0';
+                        usage.textContent = `${offer.used_count} / ${offer.uses_per_client}`;
+
+                        header.appendChild(title);
+                        header.appendChild(usage);
+
+                        const actions = document.createElement('div');
+                        actions.className = 'mt-3 flex flex-wrap items-center gap-3';
+
+                        const {
+                            wrapper: qtyWrapper,
+                            qtyInput
+                        } = buildQtyControls(1, 100);
+
+                        const redeemBtn = document.createElement('button');
+                        redeemBtn.type = 'button';
+                        redeemBtn.textContent = 'Redeem';
+                        redeemBtn.className = 'bg-[#7ac143] text-white px-4 py-2 rounded-3xl text-sm hover:bg-[#669f35]';
+                        redeemBtn.addEventListener('click', async () => {
+                            const qty = parseInt(qtyInput.value, 10);
+                            if (!qty || qty < 1) {
+                                setOffersStatus({
+                                    error: 'Quantity must be at least 1.'
+                                });
+                                return;
+                            }
+                            const added = await redeemOffer(offer.id, qty);
+                            if (added > 0) {
+                                offer.used_count += added;
+                                usage.textContent = `${offer.used_count} / ${offer.uses_per_client} redeemed`;
+                            }
+                        });
+
+                        actions.appendChild(qtyWrapper);
+                        actions.appendChild(redeemBtn);
+                        row.appendChild(header);
+                        row.appendChild(actions);
+                    }
+
+                    function renderStampCardRow(row, offer) {
+                        const header = document.createElement('div');
+                        header.className = 'flex items-start justify-between gap-3';
+
+                        const title = document.createElement('div');
+                        title.className = 'font-semibold text-gray-800 break-words';
+                        title.textContent = offer.title;
+
+                        const reqBadge = document.createElement('div');
+                        reqBadge.className = 'text-xs px-2 py-1 rounded-full bg-[#2e3192]/10 text-[#2e3192] shrink-0';
+                        reqBadge.textContent = `${offer.stamps_required} stamps`;
+
+                        header.appendChild(title);
+                        header.appendChild(reqBadge);
+
+                        const completionsNote = document.createElement('div');
+                        completionsNote.className = 'text-xs text-gray-500 mt-1';
+                        completionsNote.textContent = `Completions: ${offer.completions}`;
+
+                        // Complete card section
+                        const completeSection = document.createElement('div');
+                        completeSection.className = 'mt-3 flex flex-wrap items-center gap-3';
+
+                        const {
+                            wrapper: completeQtyWrapper,
+                            qtyInput: completeQtyInput
+                        } = buildQtyControls(1, 10);
+
+                        const completeBtn = document.createElement('button');
+                        completeBtn.type = 'button';
+                        completeBtn.textContent = 'Complete Card';
+                        completeBtn.className =
+                            'bg-[#7ac143] text-white px-4 py-2 rounded-3xl text-sm hover:bg-[#669f35]';
+                        completeBtn.addEventListener('click', async () => {
+                            const qty = parseInt(completeQtyInput.value, 10);
+                            if (!qty || qty < 1) {
+                                setOffersStatus({
+                                    error: 'Quantity must be at least 1.'
+                                });
+                                return;
+                            }
+                            const completed = await redeemOffer(offer.id, qty);
+                            if (completed > 0) {
+                                offer.completions += completed;
+                                completionsNote.textContent = `Completions: ${offer.completions}`;
+                                sharedStampBalance = Math.max(0, sharedStampBalance - completed * offer
+                                    .stamps_required);
+                                updateStampBalanceDisplay();
+                            }
+                        });
+
+                        completeSection.appendChild(completeQtyWrapper);
+                        completeSection.appendChild(completeBtn);
+
+                        row.appendChild(header);
+                        row.appendChild(completionsNote);
+                        row.appendChild(completeSection);
+                    }
+
+                    async function awardStamps(qty) {
+                        if (!currentClientId) return null;
+
+                        const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                        const response = await fetch('{{ route('business.qr.stamp') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': csrf,
+                            },
+                            body: JSON.stringify({
+                                client_profile_id: currentClientId,
+                                qty,
+                            }),
+                        });
+
+                        if (response.status === 401) {
+                            window.location.href = '{{ route('login') }}';
+                            return null;
+                        }
+
+                        const data = await response.json();
+
+                        if (!response.ok || !data?.ok) {
+                            return {
+                                ok: false,
+                                message: data?.message || 'Could not award stamps.'
+                            };
+                        }
+
+                        notifyRedemptionUpdated();
+                        return {
+                            ok: true,
+                            ...data
+                        };
                     }
 
                     async function redeemOffer(offerId, qty) {
@@ -598,7 +824,8 @@
                                                 throw new Error('Unrecognized QR format.');
                                             }
 
-                                            const client = await verifyQr(qrData.payload, qrData.signature, qrData
+                                            const client = await verifyQr(qrData.payload, qrData.signature,
+                                                qrData
                                                 .isEncoded);
 
                                             if (!client) {
@@ -606,7 +833,8 @@
                                             }
 
                                             currentClientId = client.client_profile_id;
-                                            clientNameEl.textContent = `${client.first_name} ${client.last_name}`;
+                                            clientNameEl.textContent =
+                                                `${client.first_name} ${client.last_name}`;
                                             resultCard.classList.remove('hidden');
                                             resultEl.textContent = 'QR verified.';
                                             errorEl.textContent = '';
@@ -666,6 +894,34 @@
 
                     startBtn.addEventListener('click', startScanner);
                     stopBtn.addEventListener('click', stopScanner);
+
+                    quickStampMinus.addEventListener('click', () => {
+                        quickStampQtyVal = Math.max(1, quickStampQtyVal - 1);
+                        quickStampQtyEl.textContent = String(quickStampQtyVal);
+                    });
+                    quickStampPlus.addEventListener('click', () => {
+                        quickStampQtyVal = Math.min(100, quickStampQtyVal + 1);
+                        quickStampQtyEl.textContent = String(quickStampQtyVal);
+                    });
+                    quickStampBtn.addEventListener('click', async () => {
+                        if (!currentClientId) return;
+                        quickStampNotice.classList.add('hidden');
+                        quickStampError.classList.add('hidden');
+                        quickStampBtn.disabled = true;
+                        const result = await awardStamps(quickStampQtyVal);
+                        quickStampBtn.disabled = false;
+                        if (result?.ok) {
+                            sharedStampBalance = result.stamp_balance;
+                            updateStampBalanceDisplay();
+                            quickStampNotice.textContent = result.message || 'Stamps awarded.';
+                            quickStampNotice.classList.remove('hidden');
+                            setTimeout(() => quickStampNotice.classList.add('hidden'), 3000);
+                        } else {
+                            quickStampError.textContent = result?.message || 'Could not award stamps.';
+                            quickStampError.classList.remove('hidden');
+                            setTimeout(() => quickStampError.classList.add('hidden'), 3000);
+                        }
+                    });
 
                     applyOfferBtn.addEventListener('click', async () => {
                         if (!currentClientId) return;
