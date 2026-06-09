@@ -56,7 +56,7 @@ Route::middleware('auth')->group(function () {
             Route::put('/dashboard/edit-user', [ClientDashboardController::class, 'update'])
                 ->name('dashboard.update-user');
             Route::delete('/dashboard/delete-user', [ClientDashboardController::class, 'destroy'])
-    ->name('dashboard.delete-user');
+                ->name('dashboard.delete-user');
         });
 
     // BUSINESS (business_user)

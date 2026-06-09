@@ -133,7 +133,7 @@ class ClientDashboardController extends Controller
     ]);
 
 
-    return redirect()->route('client.dashboard.edit-user')->with('success', 'Profile updated!');
+    return redirect()->route('client.dashboard')->with('success', 'Profile updated!');
 }
 public function destroy(Request $request)
 {

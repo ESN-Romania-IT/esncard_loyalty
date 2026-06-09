@@ -66,13 +66,15 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">First Name</label>
-                            <input type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}"
+                            <input type="text" name="first_name"
+                                value="{{ old('first_name', $user->profile->first_name) }}"
                                 class="w-full border-gray-300 rounded-xl px-4 py-2 focus:ring-[#2e3192] focus:border-[#2e3192]">
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Last Name</label>
-                            <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}"
+                            <input type="text" name="last_name"
+                                value="{{ old('last_name', $user->profile->last_name) }}"
                                 class="w-full border-gray-300 rounded-xl px-4 py-2 focus:ring-[#2e3192] focus:border-[#2e3192]">
                         </div>
 
