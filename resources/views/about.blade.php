@@ -5,9 +5,10 @@
 
         <div class="relative z-10 h-full max-w-7xl mx-auto grid grid-cols-2 items-center px-8">
 
-            <div class="pr-4">
+            <a href="{{ route('welcome') }}">
                 <img src="{{ asset('images/icons/esn_ro_logo.png') }}" alt="ESN Romania Logo" class="h-20 w-auto" />
-            </div>
+            </a>
+
 
             <div class="text-white max-w-md justify-self-end text-right">
                 <h2 class="text-3xl font-semibold">Digital Loyalty Card</h2>
@@ -36,7 +37,7 @@
 
         <div class="flex justify-center">
             <div class="bg-white p-4 shadow-lg rounded-xl">
-                {!! QrCode::size(180)->generate('DEMO_QR') !!}
+                {!! QrCode::size(180)->generate('https://loyalty.esn.ro/') !!}
                 <p class="mt-2 text-center font-semibold">SCAN ME</p>
             </div>
         </div>

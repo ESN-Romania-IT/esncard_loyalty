@@ -56,6 +56,13 @@
 
             @if ($showAuthActions)
                 <div class="flex justify-end items-center gap-3 mr-10 mt-5">
+                    @if (auth()->user()->role === 'standard_user')
+                        <a href="{{ route('client.dashboard.edit-user') }}"
+                            class="bg-[#7ac143] hover:bg-[#68a436] text-white font-bold py-2 px-4 rounded-3xl">
+                            Edit User
+                        </a>
+                    @endif
+
                     <a href="{{ route('me') }}"
                         class="bg-[#2e3192] hover:bg-[#25287a] text-white font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline">
                         Dashboard

@@ -104,6 +104,51 @@ class ClientDashboardController extends Controller
             ->get()
             ->groupBy('business_name');
     }
+    public function edit()
+    {
+        $user = auth()->user();
+        return view('client.edit-user', compact('user'));
+    }
+   public function update(Request $request)
+{
+    $validated = $request->validate([
+        'first_name'   => 'required|string|max:255',
+        'last_name'    => 'required|string|max:255',
+        'email'        => 'required|email|unique:users,email,' . auth()->id(),
+        'esncard_code' => 'nullable|string|max:255',
+    ]);
+
+    $user = auth()->user();
+
+    // update pe tabelul users
+    $user->update([
+        'email'        => $validated['email'],
+        'esncard_code' => $validated['esncard_code'],
+    ]);
+
+    // update pe tabelul client_profiles
+    $user->profile->update([
+        'first_name' => $validated['first_name'],
+        'last_name'  => $validated['last_name'],
+    ]);
+
+
+    return redirect()->route('client.dashboard')->with('success', 'Profile updated!');
+}
+public function destroy(Request $request)
+{
+    $user = auth()->user();
+
+    auth()->logout();
+
+    $user->profile()->delete();
+    $user->delete();
+
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect('/')->with('success', 'Contul a fost șters.');
+}
 
     private function stampCardsByBusiness(int $clientProfileId): \Illuminate\Support\Collection
     {

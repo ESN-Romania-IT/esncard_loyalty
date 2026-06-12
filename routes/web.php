@@ -51,6 +51,12 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/dashboard/stats', [ClientDashboardController::class, 'stats'])
                 ->name('dashboard.stats');
+            Route::get('/dashboard/edit-user',[ClientDashboardController::class,'edit'])
+                ->name('dashboard.edit-user');
+            Route::put('/dashboard/edit-user', [ClientDashboardController::class, 'update'])
+                ->name('dashboard.update-user');
+            Route::delete('/dashboard/delete-user', [ClientDashboardController::class, 'destroy'])
+                ->name('dashboard.delete-user');
         });
 
     // BUSINESS (business_user)
