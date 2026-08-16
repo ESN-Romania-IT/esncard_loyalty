@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ClientRedemptionController;
 use App\Http\Controllers\Admin\OfferRedemptionController;
 use App\Http\Controllers\Admin\AdminClientStampController;
 use App\Http\Controllers\Business\BusinessOfferController;
+use App\Http\Controllers\BusinessLocationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'))->name('welcome');
@@ -96,6 +97,15 @@ Route::middleware('auth')->group(function () {
 
             Route::post('/qr/stamp', [BusinessDashboardController::class, 'stamp'])
                 ->name('qr.stamp');
+
+            Route::post('/business-locations', [BusinessLocationController::class, 'store'])
+                ->name('business-locations.store');
+
+            Route::get('/business-locations', [BusinessLocationController::class, 'index'])
+                ->name('business-locations.index');
+
+            Route::delete('/business-locations/{location}', [BusinessLocationController::class, 'destroy'])
+                ->name('business-locations.destroy');
         });
 
     // ADMIN (admin)
