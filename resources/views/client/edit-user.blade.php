@@ -134,5 +134,6 @@
                 </div>
             </div>
         </div>
-
+    </div>
+    <x-site-footer />
 </x-app-layout>

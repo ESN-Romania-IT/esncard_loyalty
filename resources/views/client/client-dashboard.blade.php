@@ -328,5 +328,5 @@ shadow-md transition duration-200">
             }
         });
     </script>
-
+    <x-site-footer />
 </x-app-layout>

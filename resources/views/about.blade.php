@@ -5,7 +5,7 @@
 
         <div class="relative z-10 h-full max-w-7xl mx-auto grid grid-cols-2 items-center px-8">
 
-            <a href="{{ route('welcome') }}">
+            <a href="{{ auth()->check() ? route('me') : route('welcome') }}">
                 <img src="{{ asset('images/icons/esn_ro_logo.png') }}" alt="ESN Romania Logo" class="h-20 w-auto" />
             </a>
 
