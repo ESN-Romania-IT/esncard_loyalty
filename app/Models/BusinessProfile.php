@@ -24,4 +24,9 @@ class BusinessProfile extends Model
     public function redemptions(){
         return $this->hasMany(OfferRedemption::class, 'business_profile_id');
     }
+
+    public function locations()
+    {
+        return $this->hasMany(BusinessLocation::class, 'business_profile_id');
+    }
 }

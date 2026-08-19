@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\OfferRedemptionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Business\BusinessDashboardController;
 use App\Http\Controllers\Business\BusinessOfferController;
+use App\Http\Controllers\BusinessLocationController;
 use App\Http\Controllers\Client\ClientDashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
@@ -105,6 +106,15 @@ Route::middleware('auth')->group(function () {
 
             Route::post('/qr/stamp', [BusinessDashboardController::class, 'stamp'])
                 ->name('qr.stamp');
+
+            Route::post('/business-locations', [BusinessLocationController::class, 'store'])
+                ->name('business-locations.store');
+
+            Route::get('/business-locations', [BusinessLocationController::class, 'index'])
+                ->name('business-locations.index');
+
+            Route::delete('/business-locations/{location}', [BusinessLocationController::class, 'destroy'])
+                ->name('business-locations.destroy');
 
         });
 
