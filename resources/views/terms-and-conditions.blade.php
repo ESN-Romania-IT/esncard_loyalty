@@ -1,12 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-4">
-            <img src="{{ asset('images/icons/ESN_Logo.svg') }}" class="h-12" />
-            <h1 class="text-2xl font-semibold text-gray-800">
-                Terms & Conditions
-            </h1>
+            <a href="{{ auth()->check() ? route('me') : route('welcome') }}">
+                <img src="{{ asset('images/icons/ESN_Logo.svg') }}" class="h-12" />
+            </a>
+            <a href="{{ auth()->check() ? route('me') : route('welcome') }}">
+                <h1 class="text-2xl font-semibold text-gray-800">
+                    Terms & Conditions
+                </h1>
+            </a>
+
         </div>
     </x-slot>
+
 
     <div class="max-w-4xl
             mx-auto px-6 py-10 text-black space-y-8">

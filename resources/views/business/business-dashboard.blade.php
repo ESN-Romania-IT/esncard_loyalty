@@ -1,8 +1,8 @@
 <x-app-layout>
     <header class="flex flex-col items-center justify-center mt-2 bg-white p-6 rounded-b-full h-44">
-        <a href="/" class="flex items-center justify-center">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-12 w-auto">
-        </a>
+
+        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-12 w-auto">
+
         <h1 class="text-3xl font-bold text-center mt-4 text-[#2e3192]">Business Dashboard</h1>
     </header>
     <div class="max-w-6xl mx-auto mt-10 px-6 pb-10">

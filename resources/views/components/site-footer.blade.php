@@ -5,6 +5,9 @@
     <a href="{{ url('/terms-and-conditions') }}" class="text-sm text-black hover:underline px-3">
         Terms & Conditions
     </a>
+    <a href="{{ url('/about-business') }}" class="text-sm text-black hover:underline px-3">
+        Business Partners must read
+    </a>
     @guest
         <a href="{{ auth()->check() ? route('me') : route('login') }}" class="text-sm text-black hover:underline px-3">
             Login

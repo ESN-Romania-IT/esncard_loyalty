@@ -7,8 +7,8 @@ use App\Models\ClientProfile;
 use App\Models\ClientStamp;
 use App\Models\Offer;
 use App\Models\OfferRedemption;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
@@ -32,7 +32,19 @@ class BusinessDashboardController extends Controller
             'activeOffers' => $activeOffers,
         ]);
     }
+    public function aboutBusiness(Request $request)
+    {
+        $businessProfile = $request->user()?->business_profile;
 
+        if (!$businessProfile) {
+            abort(403, 'Business profile not found.');
+        }
+
+        return view('about-business', [
+    'user' => $request->user(),
+    'businessProfile' => $businessProfile,
+]);
+    }
     public function activeOffersStats(Request $request): JsonResponse
     {
         $businessProfile = $request->user()?->business_profile;
