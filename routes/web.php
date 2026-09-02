@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\OfferRedemptionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Business\BusinessDashboardController;
 use App\Http\Controllers\Business\BusinessOfferController;
+use App\Http\Controllers\Business\BusinessProfileController;
 use App\Http\Controllers\BusinessLocationController;
 use App\Http\Controllers\Client\ClientDashboardController;
 use App\Http\Controllers\LoginController;
@@ -73,6 +74,12 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/dashboard/stats', [BusinessDashboardController::class, 'activeOffersStats'])
                 ->name('dashboard.stats');
+
+            Route::get('/profile', [BusinessProfileController::class, 'edit'])
+                ->name('profile.edit');
+
+            Route::put('/profile', [BusinessProfileController::class, 'update'])
+                ->name('profile.update');
 
             Route::get('/offers', [BusinessOfferController::class, 'index'])
                 ->name('offers.index');

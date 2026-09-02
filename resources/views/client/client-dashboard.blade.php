@@ -86,6 +86,14 @@ shadow-md transition duration-200">
 
             </div>
 
+            <!-- MAP -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 mb-6">
+                <h3 class="text-xl font-semibold mb-6 text-gray-800">
+                    Businesses Near You
+                </h3>
+                <x-map-widget :locations="$locations" />
+            </div>
+
             <!-- REDEMPTIONS -->
             <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
 

@@ -68,6 +68,13 @@
                         Dashboard
                     </a>
 
+                            @if (auth()->user()->role === 'business_user' && request()->routeIs('business.*'))
+                                <a href="{{ route('business.profile.edit') }}"
+                                    class="bg-white border-2 border-[#2e3192] text-[#2e3192] hover:bg-gray-50 font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline">
+                                    Edit Profile
+                                </a>
+                            @endif
+
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\BusinessLocation;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -38,12 +39,14 @@ class ClientDashboardController extends Controller
 
         $redemptions = $this->redemptionsByBusiness($user->profile->id);
         $stampCards = $this->stampCardsByBusiness($user->profile->id);
+        $locations = BusinessLocation::with('businessProfile:id,business_name')->get(['id', 'business_profile_id', 'latitude', 'longitude', 'address']);
 
         return view('client.client-dashboard', [
             'user' => $user,
             'qrData' => $qrData,
             'redemptionsByBusiness' => $redemptions,
             'stampCardsByBusiness' => $stampCards,
+            'locations' => $locations,
         ]);
     }
 
