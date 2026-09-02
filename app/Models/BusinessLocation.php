@@ -12,4 +12,9 @@ class BusinessLocation extends Model
         'longitude',
         'address',
     ];
+
+    public function businessProfile()
+    {
+        return $this->belongsTo(BusinessProfile::class);
+    }
 }
