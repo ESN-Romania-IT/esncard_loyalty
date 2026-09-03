@@ -4,17 +4,16 @@ namespace App\Http\Controllers\Business;
 
 use App\Http\Controllers\Controller;
 use App\Models\ClientProfile;
+use App\Models\ClientStamp;
 use App\Models\Offer;
 use App\Models\OfferRedemption;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class BusinessDashboardController extends Controller
 {
-
-
     public function index(Request $request)
     {
         $businessProfile = $request->user()?->business_profile;
@@ -31,6 +30,48 @@ class BusinessDashboardController extends Controller
         return view('business.business-dashboard', [
             'user' => $request->user(),
             'activeOffers' => $activeOffers,
+        ]);
+    }
+    public function aboutBusiness(Request $request)
+    {
+        $businessProfile = $request->user()?->business_profile;
+
+        if (!$businessProfile) {
+            abort(403, 'Business profile not found.');
+        }
+
+        return view('about-business', [
+    'user' => $request->user(),
+    'businessProfile' => $businessProfile,
+]);
+    }
+    public function activeOffersStats(Request $request): JsonResponse
+    {
+        $businessProfile = $request->user()?->business_profile;
+
+        if (!$businessProfile) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Business profile not found.',
+            ], 403);
+        }
+
+        $offers = Offer::query()
+            ->where('business_profile_id', $businessProfile->id)
+            ->where('is_active', true)
+            ->withCount('redemptions')
+            ->orderBy('title')
+            ->get()
+            ->map(fn ($offer) => [
+                'id' => $offer->id,
+                'title' => $offer->title,
+                'redemptions_count' => (int) $offer->redemptions_count,
+                'show_url' => route('business.offers.show', $offer),
+            ]);
+
+        return response()->json([
+            'ok' => true,
+            'offers' => $offers,
         ]);
     }
 
@@ -101,24 +142,55 @@ class BusinessDashboardController extends Controller
             ->where('business_profile_id', $businessProfile->id)
             ->where('is_active', true)
             ->orderBy('title')
-            ->get(['id', 'title', 'uses_per_client']);
+            ->get(['id', 'title', 'type', 'uses_per_client', 'stamps_required']);
 
+        // Discount: redemption counts per offer
         $usedByOffer = OfferRedemption::query()
             ->where('business_profile_id', $businessProfile->id)
             ->where('client_profile_id', $clientId)
+            ->whereIn('offer_id', $offers->where('type', 'discount')->pluck('id'))
             ->selectRaw('offer_id, COUNT(*) as used_count')
             ->groupBy('offer_id')
             ->pluck('used_count', 'offer_id');
 
-        $result = $offers->map(fn ($offer) => [
-            'id' => $offer->id,
-            'title' => $offer->title,
-            'uses_per_client' => (int) $offer->uses_per_client,
-            'used_count' => (int) ($usedByOffer[$offer->id] ?? 0),
-        ]);
+        // Stamp card: shared balance for this client at this business
+        $stampBalance = ClientStamp::where('business_profile_id', $businessProfile->id)
+            ->where('client_profile_id', $clientId)
+            ->whereNull('redeemed_at')
+            ->count();
+
+        // Stamp card: completions per offer
+        $completionsByOffer = OfferRedemption::query()
+            ->where('client_profile_id', $clientId)
+            ->whereIn('offer_id', $offers->where('type', 'stamp_card')->pluck('id'))
+            ->selectRaw('offer_id, COUNT(*) as completions_count')
+            ->groupBy('offer_id')
+            ->pluck('completions_count', 'offer_id');
+
+        $result = $offers->map(function ($offer) use ($usedByOffer, $stampBalance, $completionsByOffer) {
+            if ($offer->type === 'stamp_card') {
+                return [
+                    'id' => $offer->id,
+                    'title' => $offer->title,
+                    'type' => 'stamp_card',
+                    'stamps_required' => (int) $offer->stamps_required,
+                    'stamp_balance' => $stampBalance,
+                    'completions' => (int) ($completionsByOffer[$offer->id] ?? 0),
+                ];
+            }
+
+            return [
+                'id' => $offer->id,
+                'title' => $offer->title,
+                'type' => 'discount',
+                'uses_per_client' => (int) $offer->uses_per_client,
+                'used_count' => (int) ($usedByOffer[$offer->id] ?? 0),
+            ];
+        });
 
         return response()->json([
             'ok' => true,
+            'stamp_balance' => $stampBalance,
             'offers' => $result,
         ]);
     }
@@ -159,28 +231,66 @@ class BusinessDashboardController extends Controller
                     throw new \RuntimeException('This offer is not active.');
                 }
 
-                $used = OfferRedemption::where('offer_id', $offer->id)
-                    ->where('client_profile_id', $clientId)
-                    ->lockForUpdate()
-                    ->count();
+                if ($offer->type === 'stamp_card') {
+                    $stampsRequired = (int) $offer->stamps_required;
 
-                $remaining = max(0, (int) $offer->uses_per_client - $used);
-                $qtyToCreate = min($qtyRequested, $remaining);
+                    $availableStamps = ClientStamp::where('business_profile_id', $businessProfile->id)
+                        ->where('client_profile_id', $clientId)
+                        ->whereNull('redeemed_at')
+                        ->lockForUpdate()
+                        ->count();
 
-                if ($qtyToCreate <= 0) {
-                    throw new \RuntimeException('Client has already reached the maximum uses for this offer.');
+                    $maxCompletions = $stampsRequired > 0 ? (int) floor($availableStamps / $stampsRequired) : 0;
+                    $completionsToMake = min($qtyRequested, $maxCompletions);
+
+                    if ($completionsToMake <= 0) {
+                        throw new \RuntimeException('Not enough stamps to redeem this offer.');
+                    }
+
+                    for ($i = 0; $i < $completionsToMake; $i++) {
+                        $stampIds = ClientStamp::where('business_profile_id', $businessProfile->id)
+                            ->where('client_profile_id', $clientId)
+                            ->whereNull('redeemed_at')
+                            ->orderBy('awarded_at')
+                            ->limit($stampsRequired)
+                            ->pluck('id');
+
+                        ClientStamp::whereIn('id', $stampIds)
+                            ->update(['redeemed_at' => now()]);
+
+                        OfferRedemption::create([
+                            'offer_id' => $offer->id,
+                            'client_profile_id' => $clientId,
+                            'business_profile_id' => $offer->business_profile_id,
+                            'redeemed_at' => now(),
+                        ]);
+                    }
+
+                    $added = $completionsToMake;
+                } else {
+                    $used = OfferRedemption::where('offer_id', $offer->id)
+                        ->where('client_profile_id', $clientId)
+                        ->lockForUpdate()
+                        ->count();
+
+                    $remaining = max(0, (int) $offer->uses_per_client - $used);
+                    $qtyToCreate = min($qtyRequested, $remaining);
+
+                    if ($qtyToCreate <= 0) {
+                        throw new \RuntimeException('Client has already reached the maximum uses for this offer.');
+                    }
+
+                    for ($i = 0; $i < $qtyToCreate; $i++) {
+                        OfferRedemption::create([
+                            'offer_id' => $offer->id,
+                            'client_profile_id' => $clientId,
+                            'business_profile_id' => $offer->business_profile_id,
+                            'redeemed_at' => now(),
+                        ]);
+                    }
+
+                    $added = $qtyToCreate;
                 }
-
-                for ($i = 0; $i < $qtyToCreate; $i++) {
-                    OfferRedemption::create([
-                        'offer_id' => $offer->id,
-                        'client_profile_id' => $clientId,
-                        'business_profile_id' => $offer->business_profile_id,
-                        'redeemed_at' => now(),
-                    ]);
-                }
-
-                $added = $qtyToCreate;
             });
 
             return response()->json([
@@ -203,6 +313,47 @@ class BusinessDashboardController extends Controller
         }
     }
 
+    public function stamp(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'client_profile_id' => ['required', 'integer', 'exists:client_profiles,id'],
+            'qty' => ['required', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $businessProfile = $request->user()?->business_profile;
+
+        if (!$businessProfile) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Business profile not found.',
+            ], 403);
+        }
+
+        $clientId = (int) $data['client_profile_id'];
+        $qty = (int) $data['qty'];
+        $now = now();
+
+        for ($i = 0; $i < $qty; $i++) {
+            ClientStamp::create([
+                'client_profile_id' => $clientId,
+                'business_profile_id' => $businessProfile->id,
+                'awarded_at' => $now,
+            ]);
+        }
+
+        $newBalance = ClientStamp::where('business_profile_id', $businessProfile->id)
+            ->where('client_profile_id', $clientId)
+            ->whereNull('redeemed_at')
+            ->count();
+
+        return response()->json([
+            'ok' => true,
+            'awarded' => $qty,
+            'stamp_balance' => $newBalance,
+            'message' => "Awarded {$qty} stamp(s). Balance: {$newBalance}.",
+        ]);
+    }
+
     private function validateQrPayload(string $payloadJson, string $signature): ?array
     {
         $expected = hash_hmac('sha256', $payloadJson, config('services.qr.hmac_secret'));
@@ -223,7 +374,7 @@ class BusinessDashboardController extends Controller
             return null;
         }
 
-        if ((int) $exp < now()->timestamp) {
+        if ((int) $exp < now()->subSeconds(30)->timestamp) {
             return null;
         }
 

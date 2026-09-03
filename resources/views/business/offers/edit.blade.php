@@ -33,18 +33,39 @@
                 @enderror
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Max uses per client</label>
-                <input type="number" name="uses_per_client"
-                    value="{{ old('uses_per_client', $offer->uses_per_client) }}" min="1" max="1000"
-                    class="w-full border p-2 rounded-3xl" required>
-                @error('uses_per_client')
-                    <p class="text-sm text-red-600">{{ $message }}</p>
-                @enderror
-                <p class="text-xs text-gray-500 mt-1">
-                    If reduced below existing redemptions, no new redemptions will be allowed for those clients.
-                </p>
+            <div class="bg-gray-50 rounded-xl p-3 text-sm text-gray-600">
+                <span class="font-medium">Type:</span>
+                {{ $offer->type === 'stamp_card' ? 'Stamp Card' : 'Discount' }}
+                <span class="text-xs text-gray-400 ml-1">(cannot be changed)</span>
             </div>
+
+            @if ($offer->type === 'stamp_card')
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stamps required to complete</label>
+                    <input type="number" name="stamps_required"
+                        value="{{ old('stamps_required', $offer->stamps_required) }}" min="2" max="1000"
+                        class="w-full border p-2 rounded-3xl" required>
+                    <p class="text-xs text-gray-500 mt-1">
+                        Changing this will affect future completions; existing stamps are not affected.
+                    </p>
+                    @error('stamps_required')
+                        <p class="text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            @else
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Max uses per client</label>
+                    <input type="number" name="uses_per_client"
+                        value="{{ old('uses_per_client', $offer->uses_per_client) }}" min="1" max="1000"
+                        class="w-full border p-2 rounded-3xl" required>
+                    @error('uses_per_client')
+                        <p class="text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">
+                        If reduced below existing redemptions, no new redemptions will be allowed for those clients.
+                    </p>
+                </div>
+            @endif
 
             <div class="flex items-center gap-2">
                 <input id="is_active" type="checkbox" name="is_active" value="1" class="accent-[#7ac143]"
@@ -56,7 +77,8 @@
                 <button type="submit" class="bg-[#2e3192] text-white px-4 py-2 rounded-3xl hover:bg-[#25287a]">
                     Save Changes
                 </button>
-                <a href="{{ route('business.offers.show', $offer) }}" class="text-sm text-gray-600 hover:text-gray-900">
+                <a href="{{ route('business.offers.show', $offer) }}"
+                    class="text-sm text-gray-600 hover:text-gray-900">
                     Cancel
                 </a>
             </div>

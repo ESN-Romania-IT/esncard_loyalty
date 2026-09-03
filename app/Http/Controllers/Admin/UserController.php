@@ -104,10 +104,16 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-       $data = $request->validate([
+        $esnCardRules = ['nullable','string','max:255','required_if:role,standard_user'];
+
+        if ($request->input('esncard_code') !== $user->esncard_code) {
+            $esnCardRules[] = Rule::unique('users', 'esncard_code')->ignore($user->id);
+        }
+
+        $data = $request->validate([
             'email' => ['required','email','max:255', Rule::unique('users','email')->ignore($user->id)],
             'role'  => ['required', Rule::in(['standard_user','business_user','admin'])],
-                        'esncard_code' => ['nullable','string','max:255','unique:users,esncard_code','required_if:role, standard_user', Rule::unique('users', 'esncard_code')->ignore($user->id)],
+            'esncard_code' => $esnCardRules,
 
             'password' => ['nullable','confirmed', Password::min(8)->mixedCase()],
 
@@ -150,7 +156,7 @@ class UserController extends Controller
             );
         }
 
-        return redirect()->route('admin.users.index')
+        return redirect()->route('admin.users.edit', $user)
             ->with('status', 'User updated successfully.');
     }
 

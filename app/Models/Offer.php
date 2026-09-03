@@ -4,13 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+// Offer types: 'discount' | 'stamp_card'
+
 class Offer extends Model
 {
     protected $fillable = [
         'business_profile_id',
         'title',
+        'type',
         'uses_per_client',
-        'is_active'
+        'stamps_required',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function business_rofiles(){
@@ -19,5 +27,11 @@ class Offer extends Model
 
     public function redemptions(){
         return $this->hasMany(OfferRedemption::class);
+    }
+
+
+    public function isStampCard(): bool
+    {
+        return $this->type === 'stamp_card';
     }
 }

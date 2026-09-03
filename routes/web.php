@@ -1,16 +1,20 @@
 <?php
-use App\Http\Controllers\Client\ClientDashboardController;
-use App\Http\Controllers\Business\BusinessDashboardController;
+
+use App\Http\Controllers\Admin\AdminClientStampController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\BusinessController;
-use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\ClientController;
-use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ClientRedemptionController;
+use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\OfferRedemptionController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Business\BusinessDashboardController;
 use App\Http\Controllers\Business\BusinessOfferController;
+use App\Http\Controllers\Business\BusinessProfileController;
+use App\Http\Controllers\BusinessLocationController;
+use App\Http\Controllers\Client\ClientDashboardController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'))->name('welcome');
@@ -26,6 +30,8 @@ Route::middleware('guest')->group(function () {
 Route::view('/terms-and-conditions', 'terms-and-conditions')->name('terms-and-conditions');
 
 Route::view('/about', 'about')->name('about');
+
+Route::view('/about-business', 'about-business')->name('about-business');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -47,6 +53,15 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/dashboard', [ClientDashboardController::class, 'index'])
                 ->name('dashboard');
+
+            Route::get('/dashboard/stats', [ClientDashboardController::class, 'stats'])
+                ->name('dashboard.stats');
+            Route::get('/dashboard/edit-user', [ClientDashboardController::class,'edit'])
+                ->name('dashboard.edit-user');
+            Route::put('/dashboard/edit-user', [ClientDashboardController::class, 'update'])
+                ->name('dashboard.update-user');
+            Route::delete('/dashboard/delete-user', [ClientDashboardController::class, 'destroy'])
+                ->name('dashboard.delete-user');
         });
 
     // BUSINESS (business_user)
@@ -56,6 +71,15 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/dashboard', [BusinessDashboardController::class, 'index'])
                 ->name('dashboard');
+
+            Route::get('/dashboard/stats', [BusinessDashboardController::class, 'activeOffersStats'])
+                ->name('dashboard.stats');
+
+            Route::get('/profile', [BusinessProfileController::class, 'edit'])
+                ->name('profile.edit');
+
+            Route::put('/profile', [BusinessProfileController::class, 'update'])
+                ->name('profile.update');
 
             Route::get('/offers', [BusinessOfferController::class, 'index'])
                 ->name('offers.index');
@@ -86,6 +110,19 @@ Route::middleware('auth')->group(function () {
 
             Route::post('/qr/redeem', [BusinessDashboardController::class, 'redeem'])
                 ->name('qr.redeem');
+
+            Route::post('/qr/stamp', [BusinessDashboardController::class, 'stamp'])
+                ->name('qr.stamp');
+
+            Route::post('/business-locations', [BusinessLocationController::class, 'store'])
+                ->name('business-locations.store');
+
+            Route::get('/business-locations', [BusinessLocationController::class, 'index'])
+                ->name('business-locations.index');
+
+            Route::delete('/business-locations/{location}', [BusinessLocationController::class, 'destroy'])
+                ->name('business-locations.destroy');
+
         });
 
     // ADMIN (admin)
@@ -101,6 +138,8 @@ Route::middleware('auth')->group(function () {
             Route::resource('clients', ClientController::class)->only(['index','show']);
             Route::resource('clients.redemptions', ClientRedemptionController::class)->only(['store', 'destroy']);
             Route::delete('clients/{client}/redemptions', [ClientRedemptionController::class, 'destroyForOffer'])->name('clients.redemptions.destroyForOffer');
+            Route::post('clients/{client}/stamps', [AdminClientStampController::class, 'store'])->name('clients.stamps.store');
+            Route::delete('clients/{client}/stamps', [AdminClientStampController::class, 'destroyForBusiness'])->name('clients.stamps.destroyForBusiness');
 
             Route::resource('businesses', BusinessController::class)->only(['index','show']);
             Route::resource('businesses.offers', OfferController::class);

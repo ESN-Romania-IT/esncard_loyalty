@@ -3,6 +3,7 @@
         open: false,
         businesses: @js($businesses),
         usedByOffer: @js($usedByOffer),
+        stampsByBusiness: @js($stampsByBusiness),
     
         businessId: null,
         offerId: null,
@@ -12,6 +13,39 @@
         removeOfferTitle: '',
         removeMaxQty: 1,
         removeQty: 1,
+    
+        stampOpen: false,
+        stampBusinessId: null,
+        stampQty: 1,
+        removeStampOpen: false,
+        removeStampBusinessId: null,
+        removeStampQty: 1,
+        removeStampMax: 1,
+    
+        stampBalance(businessId) {
+            return Number(this.stampsByBusiness?.[businessId]?.stamp_balance ?? 0);
+        },
+    
+        openRemoveStamp(businessId, currentBalance) {
+            this.removeStampBusinessId = businessId;
+            this.removeStampMax = Number(currentBalance);
+            this.removeStampQty = Math.min(1, this.removeStampMax || 1);
+            this.removeStampOpen = true;
+        },
+    
+        normalizeStampQty() {
+            let v = Number(this.stampQty);
+            if (Number.isNaN(v) || v < 1) v = 1;
+            if (v > 100) v = 100;
+            this.stampQty = v;
+        },
+    
+        normalizeRemoveStampQty() {
+            let v = Number(this.removeStampQty);
+            if (Number.isNaN(v) || v < 1) v = 1;
+            if (v > this.removeStampMax) v = this.removeStampMax;
+            this.removeStampQty = v;
+        },
     
         openRemove(offerId, offerTitle, currentCount) {
             this.removeOfferId = offerId;
@@ -108,6 +142,12 @@
                     </button>
                 </div>
             </div>
+            @if (session('status'))
+                <div class="mb-4 p-3 rounded bg-green-100 text-green-800 text-sm">{{ session('status') }}</div>
+            @endif
+            @if (session('error'))
+                <div class="mb-4 p-3 rounded bg-red-100 text-red-800 text-sm">{{ session('error') }}</div>
+            @endif
             <form method="GET" class="flex flex-wrap gap-3 mb-6">
                 <input type="text" name="q" value="{{ $q }}"
                     placeholder="Search by business or offer name..."
@@ -212,6 +252,137 @@
 
             <div class="mt-6">
                 {{ $rows->links() }}
+            </div>
+
+            {{-- ── STAMP MANAGEMENT ────────────────────────────────────── --}}
+            <div class="mt-8">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-[#ec008c]">Stamp balances</h3>
+                    <button type="button" @click="stampOpen = true"
+                        class="bg-[#ec008c] text-white px-4 py-2 rounded-3xl hover:bg-[#be0070] text-sm">
+                        + Award stamps
+                    </button>
+                </div>
+
+                @if ($stampsByBusiness->isEmpty())
+                    <p class="text-sm text-gray-500">No stamps yet.</p>
+                @else
+                    <div class="overflow-x-auto rounded-3xl border border-gray-200">
+                        <table class="w-full text-left">
+                            <thead class="bg-[#ec008c]/10 text-[#ec008c]">
+                                <tr>
+                                    <th class="p-3 border-b">Business</th>
+                                    <th class="p-3 border-b">Available stamps</th>
+                                    <th class="p-3 border-b">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($stampsByBusiness as $bpId => $stampRow)
+                                    <tr class="border-t">
+                                        <td class="p-3 border-b font-medium text-[#2e3192]">
+                                            {{ $stampRow->businessProfile->business_name ?? '—' }}
+                                        </td>
+                                        <td class="p-3 border-b">
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-[#ec008c]/15 text-[#a2005f] font-semibold">
+                                                {{ $stampRow->stamp_balance }}
+                                            </span>
+                                        </td>
+                                        <td class="p-3 border-b">
+                                            <button type="button"
+                                                class="bg-red-600 text-white px-3 py-1 rounded-3xl hover:bg-red-700 text-sm"
+                                                @click="openRemoveStamp({{ $bpId }}, {{ $stampRow->stamp_balance }})"
+                                                {{ $stampRow->stamp_balance > 0 ? '' : 'disabled' }}>
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Award stamps modal --}}
+        <div x-show="stampOpen" x-cloak style="display:none;"
+            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div @click.away="stampOpen = false"
+                class="bg-white w-full max-w-md rounded-3xl shadow-md p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-[#ec008c]">Award stamps</h3>
+                    <button type="button" @click="stampOpen = false"
+                        class="text-gray-500 hover:text-gray-800">✕</button>
+                </div>
+
+                <form method="POST" action="{{ route('admin.clients.stamps.store', $client) }}">
+                    @csrf
+
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Business</label>
+                    <select name="business_profile_id" x-model="stampBusinessId"
+                        class="w-full border border-gray-300 p-2 rounded-3xl mb-4" required>
+                        <option value="">Select business…</option>
+                        <template x-for="b in businesses" :key="b.id">
+                            <option :value="b.id" x-text="b.business_name"></option>
+                        </template>
+                    </select>
+
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Number of stamps</label>
+                    <input type="number" name="qty" x-model="stampQty" min="1" max="100"
+                        @blur="normalizeStampQty()" class="w-full border border-gray-300 p-2 rounded-3xl mb-4">
+
+                    <div class="flex justify-end gap-3">
+                        <button type="button" @click="stampOpen = false"
+                            class="px-4 py-2 rounded-3xl border border-gray-300 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" :disabled="!stampBusinessId"
+                            class="bg-[#ec008c] text-white px-4 py-2 rounded-3xl hover:bg-[#be0070] disabled:opacity-50">
+                            Award
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- Remove stamps modal --}}
+        <div x-show="removeStampOpen" x-cloak style="display:none;"
+            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div @click.away="removeStampOpen = false"
+                class="bg-white w-full max-w-md rounded-3xl shadow-md p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-[#2e3192]">Remove stamps</h3>
+                    <button type="button" @click="removeStampOpen = false"
+                        class="text-gray-500 hover:text-gray-800">✕</button>
+                </div>
+
+                <p class="text-sm text-gray-700 mb-4">
+                    Available stamps: <span class="font-semibold" x-text="removeStampMax"></span>
+                </p>
+
+                <form method="POST" action="{{ route('admin.clients.stamps.destroyForBusiness', $client) }}">
+                    @csrf
+                    @method('DELETE')
+
+                    <input type="hidden" name="business_profile_id" :value="removeStampBusinessId">
+
+                    <label class="block mb-2 text-sm font-medium text-gray-700">How many to remove?</label>
+                    <input type="number" name="qty" x-model="removeStampQty" min="1"
+                        :max="removeStampMax" @blur="normalizeRemoveStampQty()"
+                        class="w-full border border-gray-300 p-2 rounded-3xl mb-4">
+
+                    <div class="flex justify-end gap-3">
+                        <button type="button" @click="removeStampOpen = false"
+                            class="px-4 py-2 rounded-3xl border border-gray-300 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" :disabled="removeStampMax === 0"
+                            class="bg-red-600 text-white px-4 py-2 rounded-3xl hover:bg-red-700 disabled:opacity-50">
+                            Remove
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
         <div x-show="open" x-cloak style="display:none;"

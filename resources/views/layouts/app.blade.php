@@ -20,8 +20,9 @@
     </style>
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -55,10 +56,24 @@
 
             @if ($showAuthActions)
                 <div class="flex justify-end items-center gap-3 mr-10 mt-5">
+                    @if (auth()->user()->role === 'standard_user')
+                        <a href="{{ route('client.dashboard.edit-user') }}"
+                            class="bg-[#7ac143] hover:bg-[#68a436] text-white font-bold py-2 px-4 rounded-3xl">
+                            Edit User
+                        </a>
+                    @endif
+
                     <a href="{{ route('me') }}"
                         class="bg-[#2e3192] hover:bg-[#25287a] text-white font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline">
                         Dashboard
                     </a>
+
+                            @if (auth()->user()->role === 'business_user' && request()->routeIs('business.*'))
+                                <a href="{{ route('business.profile.edit') }}"
+                                    class="bg-white border-2 border-[#2e3192] text-[#2e3192] hover:bg-gray-50 font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline">
+                                    Edit Profile
+                                </a>
+                            @endif
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

@@ -77,12 +77,21 @@ shadow-md transition duration-200">
                     <!-- FULLSCREEN OVERLAY -->
                     <div id="qrOverlay"
                         class="fixed inset-0 bg-black/70 flex items-center justify-center hidden cursor-pointer z-50">
-                        <div class="bg-white p-6 rounded-2xl shadow-2xl">
+                        <div id="qrOverlayContent"
+                            class="bg-white p-3 sm:p-5 rounded-2xl shadow-2xl w-[92vw] h-[92vw] max-w-[92vh] max-h-[92vh]">
                             {!! QrCode::size(360)->generate($qrData) !!}
                         </div>
                     </div>
                 @endif
 
+            </div>
+
+            <!-- MAP -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 mb-6">
+                <h3 class="text-xl font-semibold mb-6 text-gray-800">
+                    Businesses Near You
+                </h3>
+                <x-map-widget :locations="$locations" />
             </div>
 
             <!-- REDEMPTIONS -->
@@ -92,48 +101,208 @@ shadow-md transition duration-200">
                     Your Redemptions
                 </h3>
 
-                @if ($redemptionsByBusiness->isEmpty())
-                    <div class="text-sm text-gray-500">
-                        No redemptions yet.
-                    </div>
-                @else
-                    <div class="space-y-6">
-                        @foreach ($redemptionsByBusiness as $businessName => $offers)
-                            <div class="border border-gray-100 rounded-xl p-5 bg-gray-50">
+                <div id="client-redemptions-empty"
+                    class="text-sm text-gray-500 {{ $redemptionsByBusiness->isEmpty() ? '' : 'hidden' }}">
+                    No redemptions yet.
+                </div>
 
-                                <div class="font-semibold text-[#00AEEF] mb-4">
-                                    {{ $businessName }}
+                <div id="client-redemptions-list"
+                    class="space-y-6 {{ $redemptionsByBusiness->isEmpty() ? 'hidden' : '' }}">
+                    @foreach ($redemptionsByBusiness as $businessName => $offers)
+                        <div class="border border-gray-100 rounded-xl p-5 bg-gray-50">
+
+                            <div class="font-semibold text-[#00AEEF] mb-4">
+                                {{ $businessName }}
+                            </div>
+
+                            <div class="space-y-3">
+                                @foreach ($offers as $offer)
+                                    <div class="flex items-center justify-between text-sm">
+                                        <div class="text-gray-700">
+                                            {{ $offer->offer_title }}
+                                        </div>
+
+                                        <div
+                                            class="px-3 py-1 rounded-full text-xs font-semibold bg-[#8DC63F]/20 text-[#3c8d1e]">
+                                            {{ $offer->redeemed_count }} / {{ $offer->uses_per_client }}
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                        </div>
+                    @endforeach
+                </div>
+
+            </div>
+
+            <!-- STAMP CARDS -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 mt-6">
+
+                <h3 class="text-xl font-semibold mb-6 text-gray-800">
+                    Your Stamp Cards
+                </h3>
+
+                <div id="client-stamps-empty"
+                    class="text-sm text-gray-500 {{ $stampCardsByBusiness->isEmpty() ? '' : 'hidden' }}">
+                    No stamp cards yet.
+                </div>
+
+                <div id="client-stamps-list" class="space-y-6 {{ $stampCardsByBusiness->isEmpty() ? 'hidden' : '' }}">
+                    @foreach ($stampCardsByBusiness as $businessName => $data)
+                        <div class="border border-gray-100 rounded-xl p-5 bg-gray-50">
+
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="font-semibold text-[#00AEEF]">{{ $businessName }}</div>
+                                <div
+                                    class="px-3 py-1 rounded-full text-xs font-semibold bg-[#ec008c]/10 text-[#ec008c]">
+                                    {{ $data['stamp_balance'] }} stamp(s) available
                                 </div>
+                            </div>
 
-                                <div class="space-y-3">
-                                    @foreach ($offers as $offer)
-                                        <div class="flex items-center justify-between text-sm">
-                                            <div class="text-gray-700">
-                                                {{ $offer->offer_title }}
-                                            </div>
-
+                            <div class="space-y-4">
+                                @foreach ($data['cards'] as $card)
+                                    <div class="text-sm">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <div class="text-gray-700 font-medium">{{ $card->offer_title }}</div>
                                             <div
-                                                class="px-3 py-1 rounded-full text-xs font-semibold bg-[#8DC63F]/20 text-[#3c8d1e]">
-                                                {{ $offer->redeemed_count }} / {{ $offer->uses_per_client }}
+                                                class="px-3 py-1 rounded-full text-xs font-semibold bg-[#2e3192]/10 text-[#2e3192]">
+                                                Needs {{ $card->stamps_required }} stamps
                                             </div>
                                         </div>
-                                    @endforeach
-                                </div>
-
+                                        <div class="text-gray-400 text-xs">
+                                            {{ $card->completions }} completion(s)
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                        @endforeach
-                    </div>
-                @endif
+
+                        </div>
+                    @endforeach
+                </div>
 
             </div>
 
         </div>
     </div>
+    <style>
+        #qrOverlayContent svg,
+        #qrOverlayContent canvas,
+        #qrOverlayContent img {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+    </style>
     <script>
         const qrWrapper = document.getElementById('qrWrapper');
         const toggleQR = document.getElementById('toggleQR');
         const qrSmall = document.getElementById('qrSmall');
         const qrOverlay = document.getElementById('qrOverlay');
+        const redemptionsList = document.getElementById('client-redemptions-list');
+        const redemptionsEmpty = document.getElementById('client-redemptions-empty');
+        const stampsList = document.getElementById('client-stamps-list');
+        const stampsEmpty = document.getElementById('client-stamps-empty');
+        const redemptionChannel = 'BroadcastChannel' in window ? new BroadcastChannel('esn-redemptions') : null;
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function renderRedemptions(businesses) {
+            if (!Array.isArray(businesses) || !businesses.length) {
+                redemptionsList.classList.add('hidden');
+                redemptionsList.innerHTML = '';
+                redemptionsEmpty.classList.remove('hidden');
+                return;
+            }
+
+            redemptionsEmpty.classList.add('hidden');
+            redemptionsList.classList.remove('hidden');
+
+            redemptionsList.innerHTML = businesses.map((business) => {
+                const offersHtml = (business.offers || []).map((offer) => `
+                    <div class="flex items-center justify-between text-sm">
+                        <div class="text-gray-700">${escapeHtml(offer.offer_title)}</div>
+                        <div class="px-3 py-1 rounded-full text-xs font-semibold bg-[#8DC63F]/20 text-[#3c8d1e]">
+                            ${offer.redeemed_count} / ${offer.uses_per_client}
+                        </div>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="border border-gray-100 rounded-xl p-5 bg-gray-50">
+                        <div class="font-semibold text-[#00AEEF] mb-4">${escapeHtml(business.business_name)}</div>
+                        <div class="space-y-3">${offersHtml}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderStampCards(businesses) {
+            if (!Array.isArray(businesses) || !businesses.length) {
+                stampsList.classList.add('hidden');
+                stampsList.innerHTML = '';
+                stampsEmpty.classList.remove('hidden');
+                return;
+            }
+
+            stampsEmpty.classList.add('hidden');
+            stampsList.classList.remove('hidden');
+
+            stampsList.innerHTML = businesses.map((business) => {
+                const cardsHtml = (business.cards || []).map((card) => `
+                    <div class="text-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="text-gray-700 font-medium">${escapeHtml(card.offer_title)}</div>
+                            <div class="px-3 py-1 rounded-full text-xs font-semibold bg-[#2e3192]/10 text-[#2e3192]">
+                                Needs ${card.stamps_required} stamps
+                            </div>
+                        </div>
+                        <div class="text-gray-400 text-xs">${card.completions} completion(s)</div>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="border border-gray-100 rounded-xl p-5 bg-gray-50">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="font-semibold text-[#00AEEF]">${escapeHtml(business.business_name)}</div>
+                            <div class="px-3 py-1 rounded-full text-xs font-semibold bg-[#ec008c]/10 text-[#ec008c]">
+                                ${business.stamp_balance} stamp(s) available
+                            </div>
+                        </div>
+                        <div class="space-y-4">${cardsHtml}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function refreshRedemptions() {
+            const response = await fetch('{{ route('client.dashboard.stats') }}', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+
+            if (response.status === 401) {
+                window.location.href = '{{ route('login') }}';
+                return;
+            }
+
+            const data = await response.json();
+            if (!response.ok || !data?.ok) {
+                return;
+            }
+
+            renderRedemptions(data.businesses || []);
+            renderStampCards(data.stamp_businesses || []);
+        }
 
         toggleQR.addEventListener('click', () => {
             qrWrapper.classList.toggle('hidden');
@@ -146,6 +315,26 @@ shadow-md transition duration-200">
         qrOverlay.addEventListener('click', () => {
             qrOverlay.classList.add('hidden');
         });
-    </script>
 
+        if (redemptionChannel) {
+            redemptionChannel.addEventListener('message', (event) => {
+                if (event?.data?.type === 'redemption-updated') {
+                    refreshRedemptions().catch(() => {});
+                }
+            });
+        }
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'esn:redemption-updated') {
+                refreshRedemptions().catch(() => {});
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (redemptionChannel) {
+                redemptionChannel.close();
+            }
+        });
+    </script>
+    <x-site-footer />
 </x-app-layout>
